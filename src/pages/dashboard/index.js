@@ -24,4 +24,5 @@ export * from "@/pages/dashboard/editarfichatecnica";
 export * from "@/pages/dashboard/crearcompra";
 export * from "@/pages/dashboard/editarpedido";
 export * from "@/pages/dashboard/crearpedido";
+export * from "@/pages/dashboard/ordenesinactivas";
 

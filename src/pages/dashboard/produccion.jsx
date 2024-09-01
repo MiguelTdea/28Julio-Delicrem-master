@@ -11,12 +11,15 @@ import {
   DialogBody,
   DialogFooter,
 } from "@material-tailwind/react";
-import { PlusIcon, EyeIcon, CogIcon } from "@heroicons/react/24/solid";
+import { PlusIcon, EyeIcon, CogIcon, ArrowDownTrayIcon } from "@heroicons/react/24/solid";
 import axios from "../../utils/axiosConfig";
 import Swal from 'sweetalert2';
-import OrdenesProducidas from "./OrdenesProducidas"; // Importar el componente de órdenes producidas
-import CrearProduccion from "./CrearProduccion"; // Importar el nuevo componente de crear producción
-import EditarProduccion from "./EditarProduccion"; // Importar el componente de edición de producción
+import OrdenesProducidas from "./OrdenesProducidas";
+import OrdenesInactivas from "./OrdenesInactivas"; // Importar el nuevo componente de órdenes inactivas
+import CrearProduccion from "./CrearProduccion";
+import EditarProduccion from "./EditarProduccion";
+import jsPDF from "jspdf";
+import "jspdf-autotable";
 
 const Toast = Swal.mixin({
   toast: true,
@@ -39,8 +42,9 @@ export function OrdenesProduccion() {
   const [ordenesPerPage] = useState(5);
   const [search, setSearch] = useState("");
   const [showOrdenesProducidas, setShowOrdenesProducidas] = useState(false);
+  const [showOrdenesInactivas, setShowOrdenesInactivas] = useState(false); // Estado para mostrar órdenes inactivas
   const [showCrearProduccion, setShowCrearProduccion] = useState(false);
-  const [showEditarProduccion, setShowEditarProduccion] = useState(false); // Estado para el modal de edición de producción
+  const [showEditarProduccion, setShowEditarProduccion] = useState(false);
 
   useEffect(() => {
     fetchOrdenes();
@@ -108,6 +112,12 @@ export function OrdenesProduccion() {
 
   const toggleOrdenesProducidas = () => {
     setShowOrdenesProducidas(!showOrdenesProducidas);
+    setShowOrdenesInactivas(false); // Asegurar que no se muestren ambas listas al mismo tiempo
+  };
+
+  const toggleOrdenesInactivas = () => {
+    setShowOrdenesInactivas(!showOrdenesInactivas);
+    setShowOrdenesProducidas(false); // Asegurar que no se muestren ambas listas al mismo tiempo
   };
 
   const toggleCrearProduccion = () => {
@@ -116,6 +126,48 @@ export function OrdenesProduccion() {
 
   const toggleEditarProduccion = () => {
     setShowEditarProduccion(!showEditarProduccion);
+  };
+
+  const handleDownloadDetails = (orden) => {
+    const doc = new jsPDF();
+    doc.text(`Detalles de la Orden: ${orden.numero_orden}`, 10, 10);
+    doc.autoTable({
+      head: [['Producto', 'Cantidad']],
+      body: orden.ordenProduccionDetalles.map(detalle => [
+        detalle.productoDetalleOrdenProduccion.nombre,
+        detalle.cantidad
+      ])
+    });
+    doc.save(`Orden_${orden.numero_orden}_detalles.pdf`);
+  };
+
+  const toggleActivo = async (idOrden, currentStatus) => {
+    try {
+      await axios.patch(`http://localhost:3000/api/ordenesproduccion/${idOrden}/activo`, {
+        activo: !currentStatus,
+      });
+      Toast.fire({
+        icon: 'success',
+        title: `¡Orden ${!currentStatus ? 'activada' : 'desactivada'} exitosamente!`
+      });
+      fetchOrdenes(); // Actualizar la lista de órdenes después de activar/desactivar
+    } catch (error) {
+      console.error("Error al cambiar el estado de la orden:", error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Hubo un problema al intentar cambiar el estado de la orden.',
+        confirmButtonText: 'Aceptar',
+        background: '#ffff',
+        iconColor: '#A62A64',
+        confirmButtonColor: '#000000',
+        customClass: {
+          title: 'text-lg font-semibold',
+          icon: 'text-2xl',
+          confirmButton: 'px-4 py-2 text-white'
+        }
+      });
+    }
   };
 
   const indexOfLastOrden = currentPage * ordenesPerPage;
@@ -134,6 +186,8 @@ export function OrdenesProduccion() {
 
         {showOrdenesProducidas ? (
           <OrdenesProducidas />
+        ) : showOrdenesInactivas ? (
+          <OrdenesInactivas />
         ) : (
           <Card className="mx-3 -mt-16 mb-6 lg:mx-4 border border-blue-gray-100">
             <CardBody className="p-4">
@@ -194,6 +248,7 @@ export function OrdenesProduccion() {
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                             <button
+                              onClick={() => toggleActivo(orden.id_orden, orden.activo)}
                               className={`relative inline-flex items-center h-6 w-12 rounded-full p-1 duration-300 ease-in-out ${
                                 orden.activo
                                   ? 'bg-gradient-to-r from-green-800 to-green-600 hover:from-green-600 hover:to-green-400 shadow-lg'
@@ -231,6 +286,14 @@ export function OrdenesProduccion() {
                                 onClick={() => handleEditOrden(orden)}
                               >
                                 <CogIcon className="h-4 w-4" />
+                              </IconButton>
+                              <IconButton
+                                className="btndescargar"
+                                size="sm"
+                                color="blue-gray"
+                                onClick={() => handleDownloadDetails(orden)}
+                              >
+                                <ArrowDownTrayIcon className="h-4 w-4" />
                               </IconButton>
                             </div>
                           </td>
@@ -283,7 +346,12 @@ export function OrdenesProduccion() {
             </Button>
           </li>
           <li>
-            <Button fullWidth color="blue-gray" size="sm">
+            <Button
+              fullWidth
+              color="blue-gray"
+              size="sm"
+              onClick={toggleOrdenesInactivas}
+            >
               Órdenes Inactivas
             </Button>
           </li>
