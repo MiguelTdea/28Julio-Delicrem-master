@@ -19,4 +19,9 @@ export * from "@/pages/dashboard/produccion";
 export * from "@/pages/dashboard/ordenesproducidas";
 export * from "@/pages/dashboard/crearproduccion";
 export * from "@/pages/dashboard/editarproduccion";
+export * from "@/pages/dashboard/crearfichatecnica";
+export * from "@/pages/dashboard/editarfichatecnica";
+export * from "@/pages/dashboard/crearcompra";
+export * from "@/pages/dashboard/editarpedido";
+export * from "@/pages/dashboard/crearpedido";
 

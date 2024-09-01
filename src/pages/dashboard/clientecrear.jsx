@@ -75,7 +75,7 @@ const ClienteCrear = ({ selectedCliente, setSelectedCliente, fetchClientes, hand
   };
 
   return (
-    <div className="mt-6 p-6 bg-white rounded-lg shadow-md">
+    <div className="mt-6 p-6 bg-white rounded-lg shadow-md max-w-md mx-auto">
       <Typography variant="h6" color="blue-gray" className="mb-4 text-center">
         {selectedCliente.id_cliente ? "Editar Cliente" : "Crear Cliente"}
       </Typography>

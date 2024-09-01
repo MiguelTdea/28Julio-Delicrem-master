@@ -26,6 +26,7 @@ export function Insumos() {
   const [selectedInsumo, setSelectedInsumo] = useState({
     nombre: "",
     stock_actual: 0,
+    unidad_medida: "", // Nuevo campo para unidad de medida
     id_categoria: "",
   });
   const [currentPage, setCurrentPage] = useState(1);
@@ -88,6 +89,7 @@ export function Insumos() {
     setSelectedInsumo({
       nombre: "",
       stock_actual: 0,
+      unidad_medida: "", // Asegurar que el campo esté vacío en la creación
       id_categoria: "",
     });
     setEditMode(false);
@@ -158,6 +160,10 @@ export function Insumos() {
 
       if (!selectedInsumo.id_categoria) {
         errors.id_categoria = "Por favor, ingrese la categoría del insumo";
+      }
+
+      if (!selectedInsumo.unidad_medida) {
+        errors.unidad_medida = "Por favor, seleccione la unidad de medida";
       }
 
       if (Object.keys(errors).length > 0) {
@@ -280,6 +286,9 @@ export function Insumos() {
                       Stock Actual
                     </th>
                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Unidad de Medida
+                    </th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Categoría
                     </th>
                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -300,39 +309,37 @@ export function Insumos() {
                         {insumo.stock_actual}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {insumo.categoriaInsumo?.nombre || 'N/A'}
+                        {insumo.unidad_medida}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {insumo.categoriaInsumo?.nombre || 'N/A'} {/* Aquí mostramos solo la propiedad `nombre` de `categoriaInsumo` */}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         <button
-        onClick={() => handleToggleEstado(insumo)}
-        className={`relative inline-flex items-center h-6 w-12 rounded-full p-1 duration-300 ease-in-out ${
-            insumo.activo
-                ? 'bg-gradient-to-r from-green-800 to-green-600 hover:from-green-600 hover:to-green-400 shadow-lg'
-                : 'bg-gradient-to-r from-red-800 to-red-500 hover:from-red-600 hover:to-red-400 shadow-lg'
-        }`}
-    >
-        <span
-            className={`inline-block w-5 h-5 transform bg-white rounded-full shadow-md transition-transform duration-300 ease-in-out ${
-                insumo.activo ? 'translate-x-5' : 'translate-x-1'
-            }`}
-        />
-        <span
-            className={`absolute left-1 flex items-center text-xs text-white font-semibold ${
-                insumo.activo ? 'opacity-0' : 'opacity-100'
-            }`}
-        >
-          
-        </span>
-        <span
-            className={`absolute right-1 flex items-center text-xs text-white font-semibold ${
-                insumo.activo ? 'opacity-100' : 'opacity-0'
-            }`}
-        >
-           
-        </span>
-    </button>
-</td>
-
+                          onClick={() => handleToggleEstado(insumo)}
+                          className={`relative inline-flex items-center h-6 w-12 rounded-full p-1 duration-300 ease-in-out ${
+                            insumo.activo
+                              ? 'bg-gradient-to-r from-green-800 to-green-600 hover:from-green-600 hover:to-green-400 shadow-lg'
+                              : 'bg-gradient-to-r from-red-800 to-red-500 hover:from-red-600 hover:to-red-400 shadow-lg'
+                          }`}
+                        >
+                          <span
+                            className={`inline-block w-5 h-5 transform bg-white rounded-full shadow-md transition-transform duration-300 ease-in-out ${
+                              insumo.activo ? 'translate-x-5' : 'translate-x-1'
+                            }`}
+                          />
+                          <span
+                            className={`absolute left-1 flex items-center text-xs text-white font-semibold ${
+                              insumo.activo ? 'opacity-0' : 'opacity-100'
+                            }`}
+                          />
+                          <span
+                            className={`absolute right-1 flex items-center text-xs text-white font-semibold ${
+                              insumo.activo ? 'opacity-100' : 'opacity-0'
+                            }`}
+                          />
+                        </button>
+                      </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <div className="flex space-x-1">
                           <IconButton
@@ -420,6 +427,22 @@ export function Insumos() {
             </Select>
             {errors.id_categoria && <Typography className="text-red-500 mt-1 text-sm">{errors.id_categoria}</Typography>}
           </div>
+          <div>
+            <Select
+              label="Unidad de Medida"
+              name="unidad_medida"
+              value={selectedInsumo.unidad_medida}
+              onChange={(e) => setSelectedInsumo({ ...selectedInsumo, unidad_medida: e })}
+              required
+              error={errors.unidad_medida}
+              className="rounded-lg border-gray-300"
+            >
+              <Option value="gramos">Gramos</Option>
+              <Option value="mililitros">Mililitros</Option>
+              <Option value="unidad">Unidad</Option>
+            </Select>
+            {errors.unidad_medida && <Typography className="text-red-500 mt-1 text-sm">{errors.unidad_medida}</Typography>}
+          </div>
         </DialogBody>
         <DialogFooter className="flex justify-end pt-4">
           <Button variant="text" className="btncancelarm" size="sm" onClick={handleOpen}>
@@ -441,12 +464,20 @@ export function Insumos() {
             <Typography className="text-sm">{selectedInsumo.nombre}</Typography>
             <Typography variant="subtitle2" className="font-bold text-gray-800">Stock Actual:</Typography>
             <Typography className="text-sm">{selectedInsumo.stock_actual}</Typography>
+            <Typography variant="subtitle2" className="font-bold text-gray-800">Unidad de Medida:</Typography>
+            <Typography className="text-sm">{selectedInsumo.unidad_medida}</Typography>
             <Typography variant="subtitle2" className="font-bold text-gray-800">Categoría:</Typography>
-            <Typography className="text-sm">{selectedInsumo.categoriaInsumo?.nombre || 'N/A'}</Typography>
+            <Typography className="text-sm">
+              {selectedInsumo.categoriaInsumo?.nombre || 'N/A'} {/* Asegurar renderizar sólo el nombre */}
+            </Typography>
             <Typography variant="subtitle2" className="font-bold text-gray-800">Creado:</Typography>
-            <Typography className="text-sm">{selectedInsumo.createdAt ? new Date(selectedInsumo.createdAt).toLocaleString() : 'N/A'}</Typography>
+            <Typography className="text-sm">
+              {selectedInsumo.createdAt ? new Date(selectedInsumo.createdAt).toLocaleString() : 'N/A'}
+            </Typography>
             <Typography variant="subtitle2" className="font-bold text-gray-800">Actualizado:</Typography>
-            <Typography className="text-sm">{selectedInsumo.updatedAt ? new Date(selectedInsumo.updatedAt).toLocaleString() : 'N/A'}</Typography>
+            <Typography className="text-sm">
+              {selectedInsumo.updatedAt ? new Date(selectedInsumo.updatedAt).toLocaleString() : 'N/A'}
+            </Typography>
           </div>
         </DialogBody>
         <DialogFooter className="flex justify-center">
