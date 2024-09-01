@@ -4,19 +4,18 @@ import {
   CardBody,
   Typography,
   Button,
+  Input,
+  IconButton,
   Dialog,
   DialogHeader,
   DialogBody,
   DialogFooter,
-  Input,
-  IconButton,
-  Select,
-  Option,
 } from "@material-tailwind/react";
 import { PlusIcon, PencilIcon, TrashIcon, EyeIcon } from "@heroicons/react/24/solid";
 import axios from "../../utils/axiosConfig";
-import Swal from 'sweetalert2';
+import Swal from "sweetalert2";
 import { useAuth } from "@/context/authContext";
+import CrearUsuario from "./crearusuario";
 
 const Toast = Swal.mixin({
   toast: true,
@@ -25,9 +24,9 @@ const Toast = Swal.mixin({
   timer: 3000,
   timerProgressBar: true,
   didOpen: (toast) => {
-    toast.addEventListener('mouseenter', Swal.stopTimer);
-    toast.addEventListener('mouseleave', Swal.resumeTimer);
-  }
+    toast.addEventListener("mouseenter", Swal.stopTimer);
+    toast.addEventListener("mouseleave", Swal.resumeTimer);
+  },
 });
 
 export function Usuarios() {
@@ -42,11 +41,16 @@ export function Usuarios() {
     email: "",
     password: "",
     id_rol: "",
+    tipo_documento: "",
+    numero_documento: "",
+    genero: "",
+    nacionalidad: "",
+    telefono: "",
+    direccion: "",
   });
   const [currentPage, setCurrentPage] = useState(1);
-  const [usuariosPerPage] = useState(3); // Define cuántos usuarios mostrar por página
+  const [usuariosPerPage] = useState(5);
   const [search, setSearch] = useState("");
-  const [formErrors, setFormErrors] = useState({});
   const { user: currentUser } = useAuth();
 
   useEffect(() => {
@@ -59,7 +63,7 @@ export function Usuarios() {
       const response = await axios.get("http://localhost:3000/api/usuarios");
       const data = response.data;
       setUsuarios(data);
-      setFilteredUsuarios(data.filter(usuario => usuario.id_usuario !== currentUser.id_usuario)); // Exclude current user
+      setFilteredUsuarios(data.filter((usuario) => usuario.id_usuario !== currentUser.id_usuario));
     } catch (error) {
       console.error("Error fetching usuarios:", error);
     }
@@ -76,49 +80,47 @@ export function Usuarios() {
   };
 
   useEffect(() => {
-    const filtered = usuarios.filter(user =>
-      user.nombre.toLowerCase().includes(search.toLowerCase()) &&
-      user.id_usuario !== currentUser.id_usuario // Exclude current user
+    const filtered = usuarios.filter(
+      (user) =>
+        user.nombre.toLowerCase().includes(search.toLowerCase()) &&
+        user.id_usuario !== currentUser.id_usuario
     );
     setFilteredUsuarios(filtered);
   }, [search, usuarios, currentUser.id_usuario]);
 
   const handleOpen = () => {
     setOpen(!open);
-    setFormErrors({});
-  };
-
-  const handleDetailsOpen = () => setDetailsOpen(!detailsOpen);
-
-  const handleEdit = (user) => {
-    setSelectedUser(user);
-    setEditMode(true);
-    setOpen(true);
-    setFormErrors({});
-  };
-
-  const handleCreate = () => {
     setSelectedUser({
       nombre: "",
       email: "",
       password: "",
       id_rol: "",
+      tipo_documento: "",
+      numero_documento: "",
+      genero: "",
+      nacionalidad: "",
+      telefono: "",
+      direccion: "",
     });
     setEditMode(false);
+  };
+
+  const handleEdit = (user) => {
+    setSelectedUser(user);
+    setEditMode(true);
     setOpen(true);
-    setFormErrors({});
   };
 
   const handleDelete = async (user) => {
     const result = await Swal.fire({
-      title: '¿Estás seguro?',
+      title: "¿Estás seguro?",
       text: `¿Estás seguro de que deseas eliminar al usuario ${user.nombre}?`,
-      icon: 'warning',
+      icon: "warning",
       showCancelButton: true,
-      confirmButtonColor: '#d33',
-      cancelButtonColor: '#000000 ',
-      confirmButtonText: 'Sí, eliminar',
-      cancelButtonText: 'Cancelar'
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#000000 ",
+      confirmButtonText: "Sí, eliminar",
+      cancelButtonText: "Cancelar",
     });
 
     if (result.isConfirmed) {
@@ -126,97 +128,29 @@ export function Usuarios() {
         await axios.delete(`http://localhost:3000/api/usuarios/${user.id_usuario}`);
         fetchUsuarios();
         Toast.fire({
-          icon: 'success',
-          title: '¡Eliminado! El usuario ha sido eliminado.'
+          icon: "success",
+          title: "¡Eliminado! El usuario ha sido eliminado.",
         });
       } catch (error) {
         console.error("Error deleting usuario:", error);
         Toast.fire({
-          icon: 'error',
-          title: 'Error al eliminar usuario. Por favor, inténtalo de nuevo.'
+          icon: "error",
+          title: "Error al eliminar usuario. Por favor, inténtalo de nuevo.",
         });
       }
     }
-  };
-
-  const handleSave = async () => {
-    const isValid = validateFields(selectedUser);
-    if (!isValid) {
-      Toast.fire({
-        icon: 'error',
-        title: 'Por favor, completa todos los campos correctamente.'
-      });
-      return;
-    }
-
-    try {
-      if (editMode) {
-        await axios.put(`http://localhost:3000/api/usuarios/${selectedUser.id_usuario}`, selectedUser);
-        fetchUsuarios();
-        Toast.fire({
-          icon: 'success',
-          title: '¡Actualizado! El usuario ha sido actualizado correctamente.'
-        });
-      } else {
-        await axios.post("http://localhost:3000/api/usuarios/registro", selectedUser);
-        fetchUsuarios();
-        Toast.fire({
-          icon: 'success',
-          title: '¡Creado! El usuario ha sido creado correctamente.'
-        });
-      }
-      setOpen(false);
-    } catch (error) {
-      console.error("Error saving usuario:", error);
-      Toast.fire({
-        icon: 'error',
-        title: 'Error al guardar usuario. Por favor, inténtalo de nuevo.'
-      });
-    }
-  };
-
-  const validateFields = (user) => {
-    const errors = {};
-
-    if (!user.nombre || user.nombre.length < 3) {
-      errors.nombre = 'El nombre debe contener al menos 3 letras y no debe incluir números ni caracteres especiales.';
-    }
-
-    if (!user.email || !/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(user.email)) {
-      errors.email = 'Ingrese un formato de correo electrónico válido.';
-    }
-
-    if (!user.password || user.password.length < 5) {
-      errors.password = 'La contraseña debe tener al menos 5 cáracteres.';
-    }
-
-    // Validación del campo select de rol
-    if (!user.id_rol) {
-      errors.id_rol = 'Debe seleccionar un rol.';
-    }
-
-    setFormErrors(errors);
-    return Object.keys(errors).length === 0;
-  };
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setSelectedUser({ ...selectedUser, [name]: value });
   };
 
   const handleSearchChange = (e) => {
     setSearch(e.target.value);
   };
 
-  // Función para cambiar de página
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
-  // Calcular índices de usuarios actuales a mostrar
   const indexOfLastUsuario = currentPage * usuariosPerPage;
   const indexOfFirstUsuario = indexOfLastUsuario - usuariosPerPage;
   const currentUsuarios = filteredUsuarios.slice(indexOfFirstUsuario, indexOfLastUsuario);
 
-  // Array de números de página
   const pageNumbers = [];
   for (let i = 1; i <= Math.ceil(filteredUsuarios.length / usuariosPerPage); i++) {
     pageNumbers.push(i);
@@ -227,19 +161,21 @@ export function Usuarios() {
     setDetailsOpen(true);
   };
 
+  const handleDetailsOpen = () => setDetailsOpen(false);
+
   const toggleActivo = async (id_usuario, activo) => {
     try {
       await axios.patch(`http://localhost:3000/api/usuarios/${id_usuario}/estado`, { activo: !activo });
       fetchUsuarios();
       Toast.fire({
-        icon: 'success',
-        title: `El usuario ha sido ${!activo ? 'activado' : 'desactivado'} correctamente.`,
+        icon: "success",
+        title: `El usuario ha sido ${!activo ? "activado" : "desactivado"} correctamente.`,
       });
     } catch (error) {
       console.error("Error al cambiar el estado del usuario:", error);
       Toast.fire({
-        icon: 'error',
-        title: 'Hubo un problema al cambiar el estado del usuario.',
+        icon: "error",
+        title: "Hubo un problema al cambiar el estado del usuario.",
       });
     }
   };
@@ -251,16 +187,11 @@ export function Usuarios() {
       </div>
       <Card className="mx-3 -mt-16 mb-6 lg:mx-4 border border-blue-gray-100">
         <CardBody className="p-4">
-          <Button onClick={handleCreate} className="btnagregar" color="green" size="sm" starticon={<PlusIcon className="h-4 w-4" />}>
+          <Button onClick={handleOpen} className="btnagregar" color="green" size="sm" starticon={<PlusIcon className="h-4 w-4" />}>
             Crear Usuario
           </Button>
           <div className="mb-6">
-            <Input
-              type="text"
-              placeholder="Buscar por nombre..."
-              value={search}
-              onChange={handleSearchChange}
-            />
+            <Input type="text" placeholder="Buscar por nombre..." value={search} onChange={handleSearchChange} />
           </div>
           <div className="mb-1">
             <Typography variant="h6" color="blue-gray" className="mb-4">
@@ -270,21 +201,16 @@ export function Usuarios() {
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th scope="col" className="px-10 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Nombre
-                    </th>
-                    <th scope="col" className="px-20 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Email
-                    </th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Rol
-                    </th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Activo
-                    </th>
-                    <th scope="col" className="px-10 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Acciones
-                    </th>
+                    <th className="px-10 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nombre</th>
+                    <th className="px-20 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rol</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipo Documento</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Número Documento</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Género</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Teléfono</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Dirección</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Activo</th>
+                    <th className="px-10 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
@@ -293,42 +219,29 @@ export function Usuarios() {
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{user.nombre}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm">{user.email}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm">
-                        {roles.find(role => role.id_rol === user.id_rol)?.nombre || "Rol no encontrado"}
+                        {roles.find((role) => role.id_rol === user.id_rol)?.nombre || "Rol no encontrado"}
                       </td>
-                      
-<td className="px-6 py-4 whitespace-nowrap">
-  <button
-    onClick={() => toggleActivo(user.id_usuario, user.activo)}
-    className={`relative inline-flex items-center cursor-pointer transition-transform duration-300 ease-in-out h-6 w-12 rounded-full focus:outline-none ${
-      user.activo
-        ? 'bg-gradient-to-r from-green-800 to-green-600 hover:from-green-600 hover:to-green-400 shadow-lg transform scale-105'
-        : 'bg-gradient-to-r from-red-800 to-red-500 hover:from-red-600 hover:to-red-400 shadow-lg transform scale-105'
-    }`}
-  >
-    <span
-      className={`transition-transform duration-300 ease-in-out ${
-        user.activo ? 'translate-x-6' : 'translate-x-1'
-      } inline-block w-5 h-5 transform bg-white rounded-full shadow-md`}
-    />
-    <span
-      className={`absolute left-1 flex items-center text-xs text-white font-semibold ${
-        user.activo ? 'opacity-0' : 'opacity-100'
-      }`}
-    >
-    
-    </span>
-    <span
-      className={`absolute right-1 flex items-center text-xs text-white font-semibold ${
-        user.activo ? 'opacity-100' : 'opacity-0'
-      }`}
-    >
-      
-    </span>
-  </button>
-</td>
-
-
-
+                      <td className="px-6 py-4 whitespace-nowrap text-sm">{user.tipo_documento}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm">{user.numero_documento}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm">{user.genero}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm">{user.telefono}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm">{user.direccion}</td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <button
+                          onClick={() => toggleActivo(user.id_usuario, user.activo)}
+                          className={`relative inline-flex items-center cursor-pointer transition-transform duration-300 ease-in-out h-6 w-12 rounded-full focus:outline-none ${
+                            user.activo
+                              ? "bg-gradient-to-r from-green-800 to-green-600 hover:from-green-600 hover:to-green-400 shadow-lg transform scale-105"
+                              : "bg-gradient-to-r from-red-800 to-red-500 hover:from-red-600 hover:to-red-400 shadow-lg transform scale-105"
+                          }`}
+                        >
+                          <span
+                            className={`transition-transform duration-300 ease-in-out ${
+                              user.activo ? "translate-x-6" : "translate-x-1"
+                            } inline-block w-5 h-5 transform bg-white rounded-full shadow-md`}
+                          />
+                        </button>
+                      </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex space-x-1">
                           <IconButton size="sm" className="btnedit" onClick={() => handleEdit(user)} disabled={!user.activo}>
@@ -348,7 +261,7 @@ export function Usuarios() {
               </table>
             </div>
             <div className="flex justify-center mt-4">
-              {pageNumbers.map(number => (
+              {pageNumbers.map((number) => (
                 <Button
                   key={number}
                   className={`pagination ${currentPage === number ? "active" : ""}`}
@@ -362,102 +275,47 @@ export function Usuarios() {
         </CardBody>
       </Card>
 
-      <Dialog open={open} handler={handleOpen} className="custom-modal bg-white rounded-lg shadow-lg max-w-lg mx-auto">
-  <DialogHeader className="bg-white border-b border-white  font-semibold p-4 rounded-t-lg">
-    {editMode ? "Editar Usuario" : "Crear Usuario"}
-  </DialogHeader>
-  <DialogBody className="p-6 space-y-6">
-    <div className="space-y-4">
-      <div className="relative">
-        <Input
-          label="Nombre"
-          name="nombre"
-          value={selectedUser.nombre}
-          onChange={handleChange}
-          error={!!formErrors.nombre}
-          required
-          
-        />
-        {formErrors.nombre && <p className="text-red-500 text-xs mt-1">{formErrors.nombre}</p>}
-      </div>
-      
-      <div className="relative">
-        <Input
-          label="Email"
-          name="email"
-          value={selectedUser.email}
-          onChange={handleChange}
-          error={!!formErrors.email}
-          required
-         
-        />
-        {formErrors.email && <p className="text-red-500 text-xs mt-1">{formErrors.email}</p>}
-      </div>
-      
-       <div className="relative">
-        <Input
-          label="Contraseña"
-          type="password"
-          name="password"
-          value={selectedUser.password}
-          onChange={handleChange}
-          error={!!formErrors.password}
-          required
-          
-        />
-        {formErrors.password && <p className="text-red-500 text-xs mt-1">{formErrors.password}</p>}
-      </div> 
-      
-      <div className="relative">
-        <Select
-          label="Rol"
-          name="id_rol"
-          value={String(selectedUser.id_rol)}
-          onChange={(value) => setSelectedUser({ ...selectedUser, id_rol: value })}
-          required
-          
-        >
-          {roles.map((role) => (
-            <Option key={role.id_rol} value={String(role.id_rol)}>
-              {role.nombre}
-            </Option>
-          ))}
-        </Select>
-        {formErrors.id_rol && <p className="text-red-500 text-xs mt-1">{formErrors.id_rol}</p>}
-      </div>
-    </div>
-  </DialogBody>
-  <DialogFooter className="bg-white border-t border-white p-4 rounded-b-lg flex justify-end space-x-2">
-    <Button className="btncancelarm bg-gradient-to-r from-red-600 to-red-400 text-white hover:from-red-500 hover:to-red-300 shadow-md transition-all duration-300" size="sm" onClick={handleOpen}>
-      Cancelar
-    </Button>
-    <Button className="btnagregarm bg-gradient-to-r from-blue-600 to-blue-400 text-white hover:from-blue-500 hover:to-blue-300 shadow-md transition-all duration-300" size="sm" onClick={handleSave}>
-      {editMode ? "Guardar cambios" : "Crear Usuario"}
-    </Button>
-  </DialogFooter>
-</Dialog>
+      <CrearUsuario
+        open={open}
+        handleOpen={handleOpen}
+        fetchUsuarios={fetchUsuarios}
+        selectedUser={selectedUser}
+        setSelectedUser={setSelectedUser}
+        editMode={editMode}
+        roles={roles}
+      />
 
-<Dialog open={detailsOpen} handler={handleDetailsOpen} className="max-w-xs w-11/12" size="xs">
-<DialogHeader className="font-bold text-gray-900">
-<Typography variant="h4">Detalles del Usuario</Typography>
-    </DialogHeader>
-    <DialogBody divider className="p-4">
-    <div className="space-y-1">
-      <Typography variant="subtitle2" className="font-bold text-gray-800">Nombre:</Typography>
-      <Typography className="text-sm">{selectedUser.nombre}</Typography>
-      <Typography variant="subtitle2" className="font-bold text-gray-800">Email:</Typography>
-      <Typography className="text-sm">{selectedUser.email}</Typography>
-      <Typography variant="subtitle2" className="font-bold text-gray-800">Rol:</Typography>
-      <Typography className="text-sm">{roles.find(role => role.id_rol === selectedUser.id_rol)?.nombre}</Typography>
-    </div>
-  </DialogBody>
-  <DialogFooter>
-    <Button className="btncancelarm" size="sm" onClick={handleDetailsOpen}>
-      Cerrar
-    </Button>
-  </DialogFooter>
-</Dialog>
-
+      {/* Dialogo para ver detalles */}
+      <Dialog open={detailsOpen} handler={handleDetailsOpen} className="max-w-xs w-11/12" size="xs">
+        <DialogHeader className="font-bold text-gray-900">
+          <Typography variant="h4">Detalles del Usuario</Typography>
+        </DialogHeader>
+        <DialogBody divider className="p-4">
+          <div className="space-y-1">
+            <Typography variant="subtitle2" className="font-bold text-gray-800">Nombre:</Typography>
+            <Typography className="text-sm">{selectedUser.nombre || 'N/A'}</Typography>
+            <Typography variant="subtitle2" className="font-bold text-gray-800">Email:</Typography>
+            <Typography className="text-sm">{selectedUser.email || 'N/A'}</Typography>
+            <Typography variant="subtitle2" className="font-bold text-gray-800">Rol:</Typography>
+            <Typography className="text-sm">{roles.find(role => role.id_rol === selectedUser.id_rol)?.nombre || 'N/A'}</Typography>
+            <Typography variant="subtitle2" className="font-bold text-gray-800">Tipo Documento:</Typography>
+            <Typography className="text-sm">{selectedUser.tipo_documento || 'N/A'}</Typography>
+            <Typography variant="subtitle2" className="font-bold text-gray-800">Número Documento:</Typography>
+            <Typography className="text-sm">{selectedUser.numero_documento || 'N/A'}</Typography>
+            <Typography variant="subtitle2" className="font-bold text-gray-800">Género:</Typography>
+            <Typography className="text-sm">{selectedUser.genero || 'N/A'}</Typography>
+            <Typography variant="subtitle2" className="font-bold text-gray-800">Teléfono:</Typography>
+            <Typography className="text-sm">{selectedUser.telefono || 'N/A'}</Typography>
+            <Typography variant="subtitle2" className="font-bold text-gray-800">Dirección:</Typography>
+            <Typography className="text-sm">{selectedUser.direccion || 'N/A'}</Typography>
+          </div>
+        </DialogBody>
+        <DialogFooter>
+          <Button className="btncancelarm" size="sm" onClick={handleDetailsOpen}>
+            Cerrar
+          </Button>
+        </DialogFooter>
+      </Dialog>
     </>
   );
 }

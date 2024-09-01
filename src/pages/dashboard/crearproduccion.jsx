@@ -18,6 +18,7 @@ export function CrearProduccion({ open, handleCreateProductionOpen }) {
   const [selectedVentas, setSelectedVentas] = useState([]);
   const [productionDetails, setProductionDetails] = useState([]);
   const [pedidos, setPedidos] = useState([]);
+  const [ventasAsociadas, setVentasAsociadas] = useState([]);
 
   useEffect(() => {
     if (open) {
@@ -25,6 +26,7 @@ export function CrearProduccion({ open, handleCreateProductionOpen }) {
       setProductionDetails([]);
       fetchVentas();
       fetchPedidos();
+      fetchVentasAsociadas();
     }
   }, [open]);
 
@@ -43,6 +45,16 @@ export function CrearProduccion({ open, handleCreateProductionOpen }) {
       setPedidos(response.data);
     } catch (error) {
       console.error("Error fetching pedidos:", error);
+    }
+  };
+
+  const fetchVentasAsociadas = async () => {
+    try {
+      const response = await axios.get("http://localhost:3000/api/ordenesproduccion/todas_ventas_asociadas");
+      const ventasAsociadas = response.data.map((venta) => venta.numero_venta);
+      setVentasAsociadas(ventasAsociadas);
+    } catch (error) {
+      console.error("Error fetching ventas asociadas:", error);
     }
   };
 
@@ -116,6 +128,9 @@ export function CrearProduccion({ open, handleCreateProductionOpen }) {
     }
   };
 
+  // Filtrar las ventas disponibles para mostrar solo las que no están asociadas
+  const ventasFiltradas = ventas.filter((venta) => !ventasAsociadas.includes(venta.numero_venta));
+
   return (
     <Dialog
       open={open}
@@ -142,7 +157,7 @@ export function CrearProduccion({ open, handleCreateProductionOpen }) {
           <Typography variant="h6" color="blue-gray" className="mb-4 text-sm">
             Seleccionar Ventas para la Orden
           </Typography>
-          {ventas.map((venta) => (
+          {ventasFiltradas.map((venta) => (
             <div key={venta.id_venta} className="mb-4">
               <Checkbox
                 id={`venta-${venta.id_venta}`}

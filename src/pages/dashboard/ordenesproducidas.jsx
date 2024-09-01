@@ -10,7 +10,7 @@ import {
   DialogBody,
   DialogFooter,
 } from "@material-tailwind/react";
-import { EyeIcon, CogIcon } from "@heroicons/react/24/solid";
+import { EyeIcon, CogIcon, CheckCircleIcon } from "@heroicons/react/24/solid";
 import axios from "../../utils/axiosConfig";
 import Swal from 'sweetalert2';
 
@@ -50,6 +50,48 @@ export function OrdenesProducidas() {
   };
 
   const handleDetailsOpen = () => setDetailsOpen(!detailsOpen);
+
+  const handleCompleteOrder = async (idOrden) => {
+    const result = await Swal.fire({
+      title: '¿Estás seguro?',
+      text: "¿Quieres marcar esta orden como completada? Esta acción ajustará el stock de productos.",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Sí, completar',
+      cancelButtonText: 'Cancelar'
+    });
+
+    if (result.isConfirmed) {
+      try {
+        await axios.put(`http://localhost:3000/api/ordenesproduccion/${idOrden}/estado`, {
+          estado: 'completado',
+        });
+        Toast.fire({
+          icon: 'success',
+          title: 'Orden marcada como completada y stock ajustado!'
+        });
+        fetchOrdenesProducidas(); // Refrescar la lista de órdenes producidas
+      } catch (error) {
+        console.error("Error al completar la orden:", error);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error al completar',
+          text: 'Hubo un problema al intentar completar la orden.',
+          confirmButtonText: 'Aceptar',
+          background: '#ffff',
+          iconColor: '#A62A64',
+          confirmButtonColor: '#000000',
+          customClass: {
+            title: 'text-lg font-semibold',
+            icon: 'text-2xl',
+            confirmButton: 'px-4 py-2 text-white'
+          }
+        });
+      }
+    }
+  };
 
   return (
     <Card className="mx-3 -mt-16 mb-6 lg:mx-4 border border-blue-gray-100">
@@ -113,13 +155,16 @@ export function OrdenesProducidas() {
                       >
                         <EyeIcon className="h-4 w-4" />
                       </IconButton>
-                      <IconButton
-                        className="btnproducir"
-                        size="sm"
-                        color="green"
-                      >
-                        <CogIcon className="h-4 w-4" />
-                      </IconButton>
+                      {orden.estado !== 'completado' && (
+                        <IconButton
+                          className="btncompletar"
+                          size="sm"
+                          color="blue"
+                          onClick={() => handleCompleteOrder(orden.id_orden)}
+                        >
+                          <CheckCircleIcon className="h-4 w-4" />
+                        </IconButton>
+                      )}
                     </div>
                   </td>
                 </tr>

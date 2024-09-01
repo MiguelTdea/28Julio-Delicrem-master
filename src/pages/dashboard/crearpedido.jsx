@@ -29,7 +29,8 @@ export function CrearPedido({ clientes, productos, fetchPedidos, onCancel }) {
     estado: "Esperando Pago",
     pagado: false,
     detallesPedido: [],
-    clientesh: { nombre: "", contacto: "" }
+    clientesh: { nombre: "", contacto: "" },
+    total: 0 // Agregar total al estado
   });
 
   const [errors, setErrors] = useState({});
@@ -39,16 +40,31 @@ export function CrearPedido({ clientes, productos, fetchPedidos, onCancel }) {
     setSelectedPedido({ ...selectedPedido, [name]: value });
   };
 
-  const handleDetalleChange = (index, name, value) => {
+  const handleDetalleChange = (index, e) => {
+    const { name, value } = e.target;
     const detalles = [...selectedPedido.detallesPedido];
+
+    if (name === 'id_producto') {
+      const productoSeleccionado = productos.find(p => p.id_producto === parseInt(value));
+      detalles[index].precio_unitario = productoSeleccionado ? productoSeleccionado.precio : "";
+    }
+
     detalles[index][name] = value;
+
+    if (name === 'cantidad' || name === 'precio_unitario') {
+      const cantidad = parseInt(detalles[index].cantidad) || 0;
+      const precioUnitario = parseFloat(detalles[index].precio_unitario) || 0;
+      detalles[index].subtotal = cantidad * precioUnitario;
+    }
+
     setSelectedPedido({ ...selectedPedido, detallesPedido: detalles });
+    updateTotal(detalles);
   };
 
   const handleAddDetalle = () => {
     setSelectedPedido({
       ...selectedPedido,
-      detallesPedido: [...selectedPedido.detallesPedido, { id_producto: "", cantidad: "" }]
+      detallesPedido: [...selectedPedido.detallesPedido, { id_producto: "", cantidad: "", precio_unitario: "", subtotal: 0 }]
     });
   };
 
@@ -56,6 +72,15 @@ export function CrearPedido({ clientes, productos, fetchPedidos, onCancel }) {
     const detalles = [...selectedPedido.detallesPedido];
     detalles.splice(index, 1);
     setSelectedPedido({ ...selectedPedido, detallesPedido: detalles });
+    updateTotal(detalles);
+  };
+
+  const updateTotal = (detalles) => {
+    const total = detalles.reduce((acc, detalle) => acc + (detalle.subtotal || 0), 0);
+    setSelectedPedido(prevState => ({
+      ...prevState,
+      total
+    }));
   };
 
   const handlePagadoChange = (e) => {
@@ -70,27 +95,16 @@ export function CrearPedido({ clientes, productos, fetchPedidos, onCancel }) {
   };
 
   const handleSave = async () => {
-    if (!selectedPedido.id_cliente || !selectedPedido.fecha_entrega || selectedPedido.detallesPedido.length === 0) {
-      Swal.fire({
-        title: 'Error',
-        text: 'Por favor, complete todos los campos requeridos.',
-        icon: 'error',
-      });
-      return;
-    }
-
+    // Validaciones previas
     const newErrors = {};
     if (!selectedPedido.id_cliente) {
-      newErrors.id_cliente = "El cliente es obligatorio ";
-    }
-    if (!selectedPedido.numero_pedido) {
-      newErrors.numero_pedido = "El número de pedido es obligatorio";
+      newErrors.id_cliente = "El cliente es obligatorio";
     }
     if (!selectedPedido.fecha_entrega) {
       newErrors.fecha_entrega = "La fecha de entrega es obligatoria";
     }
-    if (!selectedPedido.estado) {
-      newErrors.estado = "El estado es obligatorio";
+    if (selectedPedido.detallesPedido.length === 0) {
+      newErrors.detallesPedido = "Debe agregar al menos un detalle de pedido";
     }
     selectedPedido.detallesPedido.forEach((detalle, index) => {
       if (!detalle.id_producto) {
@@ -103,6 +117,11 @@ export function CrearPedido({ clientes, productos, fetchPedidos, onCancel }) {
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
+      Swal.fire({
+        title: 'Error',
+        text: 'Por favor, complete todos los campos requeridos.',
+        icon: 'error',
+      });
       return;
     }
 
@@ -115,8 +134,11 @@ export function CrearPedido({ clientes, productos, fetchPedidos, onCancel }) {
       pagado: selectedPedido.pagado,
       detallesPedido: selectedPedido.detallesPedido.map(detalle => ({
         id_producto: parseInt(detalle.id_producto),
-        cantidad: parseInt(detalle.cantidad)
-      }))
+        cantidad: parseInt(detalle.cantidad),
+        precio_unitario: parseFloat(detalle.precio_unitario),
+        subtotal: parseFloat(detalle.subtotal) // Incluyendo el subtotal
+      })),
+      total: selectedPedido.total // Incluyendo el total
     };
 
     try {
@@ -217,7 +239,7 @@ export function CrearPedido({ clientes, productos, fetchPedidos, onCancel }) {
                   required
                   name="id_producto"
                   value={detalle.id_producto}
-                  onChange={(e) => handleDetalleChange(index, 'id_producto', e)}
+                  onChange={(e) => handleDetalleChange(index, { target: { name: 'id_producto', value: e } })}
                   className="w-full"
                 >
                   {productos.map(producto => (
@@ -232,8 +254,26 @@ export function CrearPedido({ clientes, productos, fetchPedidos, onCancel }) {
                   type="number"
                   required
                   value={detalle.cantidad}
-                  onChange={(e) => handleDetalleChange(index, 'cantidad', e.target.value)}
+                  onChange={(e) => handleDetalleChange(index, e)}
                   className="w-full"
+                />
+                <Input
+                  label="Precio Unitario"
+                  name="precio_unitario"
+                  type="number"
+                  step="0.01"
+                  value={detalle.precio_unitario}
+                  className="w-full"
+                  readOnly // Usar readOnly en lugar de disabled
+                />
+                <Input
+                  label="Subtotal"
+                  name="subtotal"
+                  type="number"
+                  step="0.01"
+                  value={detalle.subtotal}
+                  className="w-full"
+                  readOnly
                 />
                 <div className="flex justify-end">
                   <IconButton
@@ -254,13 +294,29 @@ export function CrearPedido({ clientes, productos, fetchPedidos, onCancel }) {
             </Button>
           </div>
         </div>
+
+        <div className="flex justify-end mt-4">
+          <Typography variant="h6" color="black">
+            Total: ${selectedPedido.total.toFixed(2)}
+          </Typography>
+        </div>
       </div>
 
       <div className="flex justify-end gap-2 mt-4">
-        <Button variant="text" className="btncancelarm" size="sm" onClick={onCancel}>
+        <Button
+          variant="text"
+          className="btncancelarm"
+          size="sm"
+          onClick={onCancel}
+        >
           Cancelar
         </Button>
-        <Button variant="gradient" className="btnagregarm" size="sm" onClick={handleSave}>
+        <Button
+          variant="gradient"
+          className="btnagregarm"
+          size="sm"
+          onClick={handleSave}
+        >
           Crear Pedido
         </Button>
       </div>
