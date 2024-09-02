@@ -134,24 +134,30 @@ export function CategoriaInsumos() {
 
   const handleSave = async () => {
     try {
-      const regex = /^[a-zA-ZáéíóúüÁÉÍÓÚÜ\s]+$/;
+      const regexNombre = /^[a-zA-ZáéíóúüÁÉÍÓÚÜ\s]+$/; // Solo letras y espacios
+      const regexDescripcion = /^.{2,50}$/; // De 2 a 50 caracteres
       const errors = {};
 
       if (!selectedCategoria.nombre.trim()) {
         errors.nombre = "Por favor, ingrese el nombre de la categoría de insumos.";
-      } else if (!regex.test(selectedCategoria.nombre)) {
+      } else if (selectedCategoria.nombre.length < 4) {
+        errors.nombre = "El nombre debe tener al menos 4 caracteres.";
+      } else if (selectedCategoria.nombre.length > 15) {
+        errors.nombre = "El nombre no puede tener más de 15 caracteres.";
+      } else if (!regexNombre.test(selectedCategoria.nombre)) {
         errors.nombre = "El nombre solo puede contener letras y espacios.";
       }
 
       if (!selectedCategoria.descripcion.trim()) {
         errors.descripcion = "Por favor, ingrese la descripción de la categoría.";
+      } else if (!regexDescripcion.test(selectedCategoria.descripcion)) {
+        errors.descripcion = "La descripción debe tener entre 2 y 50 caracteres.";
       }
-
       if (Object.keys(errors).length > 0) {
         setErrors(errors);
         return;
       }
-
+      
       if (editMode) {
         await axios.put(`http://localhost:3000/api/categorias_insumo/${selectedCategoria.id_categoria}`, selectedCategoria);
         setOpen(false);
@@ -200,8 +206,49 @@ export function CategoriaInsumos() {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setSelectedCategoria({ ...selectedCategoria, [name]: value });
-    setErrors({ ...errors, [name]: "" });
+  
+    // Validaciones en tiempo real
+    const newErrors = { ...errors };
+    const regexNombre = /^[a-zA-ZáéíóúüÁÉÍÓÚÜ\s]+$/; // Solo letras y espacios
+    const regexDescripcion = /^.{5,70}$/; // Entre 5 y 70 caracteres
+  
+    if (name === "nombre") {
+      if (!value.trim()) {
+        newErrors.nombre = "Por favor, ingrese el nombre de la categoría de insumos.";
+      } else if (value.length < 4) {
+        newErrors.nombre = "El nombre debe tener al menos 4 caracteres.";
+      } else if (value.length > 15) {
+        newErrors.nombre = "El nombre no puede tener más de 15 caracteres.";
+      } else if (!regexNombre.test(value)) {
+        newErrors.nombre = "El nombre solo puede contener letras y espacios.";
+      } else if (categorias.some(categoria =>
+        categoria.nombre.toLowerCase() === value.toLowerCase() &&
+        (!editMode || categoria.id_categoria !== selectedCategoria.id_categoria) // No comparar la categoría actual en modo edición
+      )) {
+        newErrors.nombre = "El nombre de la categoría ya existe.";
+      } else {
+        delete newErrors.nombre;
+      }
+    }
+  
+    if (name === "descripcion") {
+      if (!value.trim()) {
+        newErrors.descripcion = "Por favor, ingrese la descripción de la categoría.";
+      } else if (value.length < 5) {
+        newErrors.descripcion = "La descripción debe tener al menos 5 caracteres.";
+      } else if (value.length > 70) {
+        newErrors.descripcion = "La descripción no puede tener más de 70 caracteres.";
+      } else if (!regexDescripcion.test(value)) {
+        newErrors.descripcion = "La descripción debe tener entre 5 y 70 caracteres.";
+      } else {
+        delete newErrors.descripcion;
+      }
+    }
+  
+    setErrors(newErrors);
   };
+  
+  
 
   const handleSearchChange = (e) => {
     setSearch(e.target.value);
@@ -212,16 +259,63 @@ export function CategoriaInsumos() {
     setDetailsOpen(true);
   };
 
+  
+
   const handleToggleEstado = async (categoria) => {
-    try {
-      await axios.patch(`http://localhost:3000/api/categorias_insumo/${categoria.id_categoria}/estado`, {
-        activo: !categoria.activo,
-      });
-      fetchCategorias();
-    } catch (error) {
-      console.error("Error updating estado:", error);
+    const result = await Swal.fire({
+      title: `¿Estás seguro?`,
+      text: `¿Deseas ${categoria.activo ? 'desactivar' : 'activar'} la categoría ${categoria.nombre}?`,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#A62A64',
+      cancelButtonColor: '#000000',
+      confirmButtonText: `Sí, ${categoria.activo ? 'desactivar' : 'activar'}`,
+      cancelButtonText: 'Cancelar'
+    });
+  
+    if (result.isConfirmed) {
+      try {
+        if (categoria.activo) { // Solo verificamos si intentamos desactivar la categoría
+          // Verificar si existen insumos asociados a la categoría que se intenta desactivar
+          const response = await axios.get(`http://localhost:3000/api/insumos?categoria_id=${categoria.id_categoria}`);
+          const insumosAsociados = response.data;
+  
+          if (insumosAsociados.length > 0) {
+            Swal.fire({
+              icon: 'warning',
+              title: 'No se puede desactivar la categoría',
+              text: `Esta categoría está asociada a ${insumosAsociados.length} insumo(s).`,
+              confirmButtonColor: '#A62A64',
+              background: '#fff',
+              confirmButtonText: 'Aceptar'
+            });
+            return;
+          }
+        }
+  
+        // Si no hay insumos asociados, o si se está activando la categoría, proceder con el cambio de estado
+        await axios.patch(`http://localhost:3000/api/categorias_insumo/${categoria.id_categoria}/estado`, { activo: !categoria.activo });
+        fetchCategorias();
+        Swal.fire({
+          icon: 'success',
+          title: `La categoría ha sido ${!categoria.activo ? 'activada' : 'desactivada'} correctamente.`,
+          confirmButtonColor: '#A62A64',
+          background: '#fff',
+          confirmButtonText: 'Aceptar'
+        });
+      } catch (error) {
+        console.error("Error al cambiar el estado de la categoría:", error);
+        Swal.fire({
+          icon: 'error',
+          title: 'Hubo un problema al cambiar el estado de la categoría.',
+          confirmButtonColor: '#A62A64',
+          background: '#fff',
+          confirmButtonText: 'Aceptar'
+        });
+      }
     }
   };
+  
 
   const indexOfLastCategoria = currentPage * categoriasPerPage;
   const indexOfFirstCategoria = indexOfLastCategoria - categoriasPerPage;
@@ -239,19 +333,31 @@ export function CategoriaInsumos() {
       <div className="relative mt-2 h-32 w-full overflow-hidden rounded-xl bg-[url('/img/background-image.png')] bg-cover bg-center">
         <div className="absolute inset-0 h-full w-full bg-gray-900/75" />
       </div>
+
+
       <Card className="mx-3 -mt-16 mb-6 lg:mx-4 border border-blue-gray-100">
-        <CardBody className="p-4">
-          <Button onClick={handleCreate} className="btnagregar" size="sm" startIcon={<PlusIcon />}>
-            Crear Categoría de Insumos
-          </Button>
-          <div className="mb-6">
-            <Input
-              type="text"
-              placeholder="Buscar por nombre de insumo..."
-              value={search}
-              onChange={handleSearchChange}
-            />
-          </div>
+  <CardBody className="p-4">
+  <div className="flex items-center justify-between mb-6">
+  <Button 
+    onClick={handleCreate} 
+    className="btnagregar w-40" // Ajusta el ancho horizontal del botón
+    size="sm" 
+    startIcon={<PlusIcon className="h-4 w-4" />}
+  >
+    Crear Categoría de Insumos
+  </Button>
+  <input
+  type="text"
+  placeholder="Buscar por nombre de Categoría..."
+  value={search}
+  onChange={handleSearchChange}
+  className="ml-[28rem] border border-gray-300 rounded-md focus:border-blue-500 appearance-none shadow-none py-2 px-4 text-sm" // Ajusta el padding vertical y horizontal
+  style={{ width: '265px' }} // Ajusta el ancho del campo de búsqueda
+/>
+</div>
+
+
+          
           <div className="mb-1">
             <Typography variant="h6" color="blue-gray" className="mb-4">
               Lista de Categorías de Insumo

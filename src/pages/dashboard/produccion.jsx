@@ -15,7 +15,7 @@ import { PlusIcon, EyeIcon, CogIcon, ArrowDownTrayIcon } from "@heroicons/react/
 import axios from "../../utils/axiosConfig";
 import Swal from 'sweetalert2';
 import OrdenesProducidas from "./OrdenesProducidas";
-import OrdenesInactivas from "./OrdenesInactivas"; // Importar el nuevo componente de órdenes inactivas
+import OrdenesInactivas from "./OrdenesInactivas";
 import CrearProduccion from "./CrearProduccion";
 import EditarProduccion from "./EditarProduccion";
 import jsPDF from "jspdf";
@@ -42,7 +42,7 @@ export function OrdenesProduccion() {
   const [ordenesPerPage] = useState(5);
   const [search, setSearch] = useState("");
   const [showOrdenesProducidas, setShowOrdenesProducidas] = useState(false);
-  const [showOrdenesInactivas, setShowOrdenesInactivas] = useState(false); // Estado para mostrar órdenes inactivas
+  const [showOrdenesInactivas, setShowOrdenesInactivas] = useState(false);
   const [showCrearProduccion, setShowCrearProduccion] = useState(false);
   const [showEditarProduccion, setShowEditarProduccion] = useState(false);
 
@@ -122,10 +122,16 @@ export function OrdenesProduccion() {
 
   const toggleCrearProduccion = () => {
     setShowCrearProduccion(!showCrearProduccion);
+    if (showCrearProduccion) {
+      fetchOrdenes(); // Refresca las órdenes al cerrar el diálogo
+    }
   };
 
   const toggleEditarProduccion = () => {
     setShowEditarProduccion(!showEditarProduccion);
+    if (showEditarProduccion) {
+      fetchOrdenes(); // Refresca las órdenes al cerrar el diálogo
+    }
   };
 
   const handleDownloadDetails = (orden) => {
