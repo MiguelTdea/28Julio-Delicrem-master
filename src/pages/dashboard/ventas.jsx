@@ -312,9 +312,7 @@ export function Ventas() {
           <Button onClick={() => setShowCrearVenta(!showCrearVenta)} className="btnagregar" size="sm" startIcon={<PlusIcon />}> 
             {showCrearVenta ? "Ocultar Crear Venta" : "Crear Venta"} 
           </Button> 
-          <Button onClick={() => setProductionOpen(!productionOpen)} className="btnagregar" size="sm" startIcon={<PlusIcon />} style={{ marginLeft: '10px' }}> 
-            Producción 
-          </Button>
+         
           {/* Mostrar formulario de crear venta o lista de ventas según el estado */}
           {showCrearVenta ? (
             <div className="mt-6">
@@ -369,7 +367,7 @@ export function Ventas() {
                           ESTADO
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          ACTIVO
+                          ANULAR
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                           ACCIONES
@@ -459,29 +457,31 @@ export function Ventas() {
 
       {/* Modal para capturar motivo de anulación */}
       {cancelOpen && (
-        <div className="fixed inset-0 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg max-w-sm">
-            <Typography variant="h6" className="font-semibold mb-4">
-              Motivo de Anulación
-            </Typography>
-            <Input
-              label="Motivo de Anulación"
-              value={motivoAnulacion}
-              onChange={(e) => setMotivoAnulacion(e.target.value)}
-              className="w-full mb-4"
-              required
-            />
-            <div className="flex justify-end gap-2">
-              <Button variant="text" className="btncancelarm" size="sm" onClick={() => setCancelOpen(false)}>
-                Cancelar
-              </Button>
-              <Button variant="gradient" className="btnagregarm" size="sm" onClick={handleCancelVenta}>
-                Anular Venta
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
+  <Dialog open={true} handler={() => setCancelOpen(false)} className="max-w-xs w-11/12 bg-white rounded-lg shadow-lg" size="xs">
+    <DialogHeader className="bg-gray-100 text-gray-800 p-3 rounded-t-lg border-b border-gray-300">
+      <Typography variant="h6" className="font-semibold">
+        Motivo de Anulación
+      </Typography>
+    </DialogHeader>
+    <DialogBody divider className="p-4 bg-white">
+      <Input 
+        label="Motivo de Anulación"
+        value={motivoAnulacion}
+        onChange={(e) => setMotivoAnulacion(e.target.value)}
+        className="w-full border-gray-300 rounded-md"
+        required
+      />
+    </DialogBody>
+    <DialogFooter className="bg-gray-100 p-3 flex justify-end gap-2 rounded-b-lg border-t border-gray-300">
+      <Button variant="text" className="btncancelarm" size="sm" onClick={() => setCancelOpen(false)}>
+        Cancelar
+      </Button>
+      <Button variant="gradient" className="btnagregarm" size="sm" onClick={handleCancelVenta}>
+        Anular Venta
+      </Button>
+    </DialogFooter>
+  </Dialog>
+)}
 
       <Producir
         open={productionOpen} 

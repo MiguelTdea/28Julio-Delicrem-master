@@ -121,10 +121,10 @@ const ClienteCrear = ({ selectedCliente, setSelectedCliente, fetchClientes, hand
             onChange={(e) => setSelectedCliente({ ...selectedCliente, tipo_documento: e })}
             className="w-full rounded-lg border-gray-300"
           >
-            <Option value="CC">CC</Option>
-            <Option value="NIT">NIT</Option>
-            <Option value="PP">PP</Option>
-            <Option value="CE">CE</Option>
+           <Option value="Cédula">Cédula</Option>
+              <Option value="NIT">NIT</Option>
+              <Option value="Pasaporte">Pasaporte</Option>
+              <Option value="Cédula Extranjería">Cédula Extranjería</Option>
           </Select>
         </div>
         <div>

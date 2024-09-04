@@ -255,10 +255,10 @@ const CrearUsuario = ({
               onChange={(value) => handleSelectChange("tipo_documento", value)}
               required
             >
-              <Option value="CC">CC</Option>
+              <Option value="Cédula">Cédula</Option>
               <Option value="NIT">NIT</Option>
-              <Option value="PP">PP</Option>
-              <Option value="CE">CE</Option>
+              <Option value="Pasaporte">Pasaporte</Option>
+              <Option value="Cédula Extranjería">Cédula Extranjería</Option>
             </Select>
             {formErrors.tipo_documento && <p className="text-red-500 text-xs mt-1">{formErrors.tipo_documento}</p>}
           </div>

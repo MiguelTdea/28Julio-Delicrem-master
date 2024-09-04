@@ -164,19 +164,35 @@ export function Usuarios() {
   const handleDetailsOpen = () => setDetailsOpen(false);
 
   const toggleActivo = async (id_usuario, activo) => {
-    try {
-      await axios.patch(`http://localhost:3000/api/usuarios/${id_usuario}/estado`, { activo: !activo });
-      fetchUsuarios();
-      Toast.fire({
-        icon: "success",
-        title: `El usuario ha sido ${!activo ? "activado" : "desactivado"} correctamente.`,
-      });
-    } catch (error) {
-      console.error("Error al cambiar el estado del usuario:", error);
-      Toast.fire({
-        icon: "error",
-        title: "Hubo un problema al cambiar el estado del usuario.",
-      });
+    const result = await Swal.fire({
+      title: `¿Estás seguro?`,
+      text: `¿Deseas ${activo ? 'desactivar' : 'activar'} el usuario?`,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#A62A64',
+      cancelButtonColor: '#000000',
+      confirmButtonText: `Sí, ${activo ? 'desactivar' : 'activar'}`,
+      cancelButtonText: 'Cancelar'
+    });
+  
+    if (result.isConfirmed) {
+      try {
+        // Aquí puedes realizar una verificación adicional si es necesario
+        // Por ejemplo, si se quiere desactivar un usuario, podrías verificar si existen condiciones para no permitirlo
+  
+        await axios.patch(`http://localhost:3000/api/usuarios/${id_usuario}/estado`, { activo: !activo });
+        fetchUsuarios();
+        Toast.fire({
+          icon: 'success',
+          title: `El usuario ha sido ${!activo ? 'activado' : 'desactivado'} correctamente.`,
+        });
+      } catch (error) {
+        console.error("Error al cambiar el estado del usuario:", error);
+        Toast.fire({
+          icon: 'error',
+          title: 'Hubo un problema al cambiar el estado del usuario.',
+        });
+      }
     }
   };
 
@@ -185,14 +201,29 @@ export function Usuarios() {
       <div className="relative mt-2 h-32 w-full overflow-hidden rounded-xl bg-[url('/img/background-image.png')] bg-cover bg-center">
         <div className="absolute inset-0 h-full w-full bg-gray-900/75" />
       </div>
+
+
       <Card className="mx-3 -mt-16 mb-6 lg:mx-4 border border-blue-gray-100">
         <CardBody className="p-4">
-          <Button onClick={handleOpen} className="btnagregar" color="green" size="sm" starticon={<PlusIcon className="h-4 w-4" />}>
+        <div className="flex items-center justify-between mb-6">
+          <Button 
+          onClick={handleOpen} 
+          className="btnagregar" color="green" 
+          size="sm" starticon={<PlusIcon className="h-4 w-4" />}>
             Crear Usuario
           </Button>
-          <div className="mb-6">
-            <Input type="text" placeholder="Buscar por nombre..." value={search} onChange={handleSearchChange} />
-          </div>
+          <input
+  type="text"
+  placeholder="Buscar por nombre de Usuario..."
+  value={search}
+  onChange={handleSearchChange}
+  className="ml-[28rem] border border-gray-300 rounded-md focus:border-blue-500 appearance-none shadow-none py-2 px-4 text-sm" // Ajusta el padding vertical y horizontal
+  style={{ width: '265px' }} // Ajusta el ancho del campo de búsqueda
+/>
+</div>
+
+
+
           <div className="mb-1">
             <Typography variant="h6" color="blue-gray" className="mb-4">
               Lista de Usuarios
@@ -203,13 +234,13 @@ export function Usuarios() {
                   <tr>
                     <th className="px-10 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nombre</th>
                     <th className="px-20 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rol</th>
+                    <th className="px-10 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rol</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipo Documento</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Número Documento</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Género</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Teléfono</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Dirección</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Activo</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
                     <th className="px-10 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
                   </tr>
                 </thead>
@@ -221,7 +252,7 @@ export function Usuarios() {
                       <td className="px-6 py-4 whitespace-nowrap text-sm">
                         {roles.find((role) => role.id_rol === user.id_rol)?.nombre || "Rol no encontrado"}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm">{user.tipo_documento}</td>
+                      <td className="px-10 py-4 whitespace-nowrap text-sm">{user.tipo_documento}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm">{user.numero_documento}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm">{user.genero}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm">{user.telefono}</td>

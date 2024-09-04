@@ -42,7 +42,7 @@ export function ProductoTerminado() {
     precio: "",
   });
   const [currentPage, setCurrentPage] = useState(1);
-  const [productosPerPage] = useState(3);
+  const [productosPerPage] = useState(5);
   const [search, setSearch] = useState("");
   const [errors, setErrors] = useState({});
 
@@ -280,7 +280,7 @@ export function ProductoTerminado() {
                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Descripción</th>
                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Precio</th>
                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Vendidos</th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Activo</th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
                     <th scope="col" className="px-10 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Acciones
                     </th>

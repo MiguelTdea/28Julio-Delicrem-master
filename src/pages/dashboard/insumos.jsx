@@ -30,7 +30,7 @@ export function Insumos() {
     id_categoria: "",
   });
   const [currentPage, setCurrentPage] = useState(1);
-  const [insumosPerPage] = useState(6);
+  const [insumosPerPage] = useState(8);
   const [search, setSearch] = useState("");
   const [errors, setErrors] = useState({});
   const [categorias, setCategorias] = useState([]);
@@ -125,7 +125,7 @@ export function Insumos() {
         });
         Toast.fire({
           icon: "success",
-          title: "Insumo eliminado exitosamente"
+          title: "Insumo eliminado exitosamente."
         });
       } catch (error) {
         console.error("Error deleting insumo:", error);
@@ -230,17 +230,88 @@ export function Insumos() {
     setSelectedInsumo(insumo);
     setDetailsOpen(true);
   };
-
+  
   const handleToggleEstado = async (insumo) => {
-    try {
-      await axios.patch(`http://localhost:3000/api/insumos/${insumo.id_insumo}/estado`, {
-        activo: !insumo.activo,
-      });
-      fetchInsumos();
-    } catch (error) {
-      console.error("Error updating insumo estado:", error);
+    const estado = !insumo.activo;
+    const accion = estado ? 'activar' : 'desactivar';
+  
+    const result = await Swal.fire({
+      title: `¿Estás seguro?`,
+      text: `¿Deseas ${accion} el insumo?`,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#A62A64',
+      cancelButtonColor: '#000000',
+      confirmButtonText: `Sí, ${accion} el insumo`,
+      cancelButtonText: 'Cancelar'
+    });
+  
+    if (result.isConfirmed) {
+      try {
+        if (!estado) { // Solo verificamos si intentamos desactivar el insumo
+          // Verificar si el insumo está asociado a una ficha técnica
+          const fichasResponse = await axios.get(`http://localhost:3000/api/fichastecnicas`);
+          const fichasTecnicas = fichasResponse.data.filter(ficha => ficha.insumos.includes(insumo.id_insumo));
+  
+          if (fichasTecnicas.length > 0) {
+            Swal.fire({
+              icon: 'warning',
+              title: 'No se puede desactivar el insumo',
+              text: `El insumo está asociado a ${fichasTecnicas.length} ficha(s) técnica(s).`,
+              confirmButtonColor: '#A62A64',
+              background: '#fff',
+              confirmButtonText: 'Aceptar'
+            });
+            return;
+          }
+        }
+  
+        // Si no está asociado a ninguna ficha técnica, o si se está activando el insumo, proceder con el cambio de estado
+        await axios.patch(`http://localhost:3000/api/insumos/${insumo.id_insumo}/estado`, {
+          activo: estado
+        });
+  
+        fetchInsumos();
+  
+        const Toast = Swal.mixin({
+          toast: true,
+          position: "top-end",
+          showConfirmButton: false,
+          timer: 3000,
+          timerProgressBar: true,
+          didOpen: (toast) => {
+            toast.onmouseenter = Swal.stopTimer;
+            toast.onmouseleave = Swal.resumeTimer;
+          }
+        });
+  
+        Toast.fire({
+          icon: "success",
+          title: `Insumo ${estado ? 'activado' : 'desactivado'} exitosamente`
+        });
+      } catch (error) {
+        console.error("Error al cambiar el estado del insumo:", error);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error al cambiar el estado',
+          text: 'El insumo no se puede cambiar de estado debido a un error.',
+          confirmButtonText: 'Aceptar',
+          background: '#ffff',
+          iconColor: '#A62A64',
+          confirmButtonColor: '#000000',
+          customClass: {
+            title: 'text-lg font-semibold',
+            icon: 'text-2xl',
+            confirmButton: 'px-4 py-2 text-white'
+          }
+        });
+      }
     }
   };
+  
+  
+  
+  
 
   const indexOfLastInsumo = currentPage * insumosPerPage;
   const indexOfFirstInsumo = indexOfLastInsumo - insumosPerPage;
@@ -258,19 +329,30 @@ export function Insumos() {
       <div className="relative mt-2 h-32 w-full overflow-hidden rounded-xl bg-[url('/img/background-image.png')] bg-cover bg-center">
         <div className="absolute inset-0 h-full w-full bg-gray-900/75" />
       </div>
+
+
       <Card className="mx-3 -mt-16 mb-6 lg:mx-4 border border-blue-gray-100">
-        <CardBody className="p-4">
-          <Button onClick={handleCreate} className="btnagregar" size="sm" startIcon={<PlusIcon />}>
-            Crear Insumo
-          </Button>
-          <div className="mb-6">
-            <Input
-              type="text"
-              placeholder="Buscar por nombre..."
-              value={search}
-              onChange={handleSearchChange}
-            />
-          </div>
+  <CardBody className="p-4">
+  <div className="flex items-center justify-between mb-6">
+  <Button 
+    onClick={handleCreate} 
+    className="btnagregar w-40" // Ajusta el ancho horizontal del botón
+    size="sm" 
+    startIcon={<PlusIcon  />}
+  >
+    Crear Insumo
+  </Button>
+  <input
+  type="text"
+  placeholder="Buscar por nombre de Insumo..."
+  value={search}
+  onChange={handleSearchChange}
+  className="ml-[28rem] border border-gray-300 rounded-md focus:border-blue-500 appearance-none shadow-none py-2 px-4 text-sm" // Ajusta el padding vertical y horizontal
+  style={{ width: '250px' }} // Ajusta el ancho del campo de búsqueda
+/>
+</div>
+
+
           <div className="mb-1">
             <Typography variant="h6" color="blue-gray" className="mb-4">
               Lista de Insumos
@@ -437,9 +519,9 @@ export function Insumos() {
               error={errors.unidad_medida}
               className="rounded-lg border-gray-300"
             >
-              <Option value="gramos">Gramos</Option>
-              <Option value="mililitros">Mililitros</Option>
-              <Option value="unidad">Unidad</Option>
+              <Option value="Gramos">Gramos</Option>
+              <Option value="Mililitros">Mililitros</Option>
+              <Option value="Unidad">Unidad</Option>
             </Select>
             {errors.unidad_medida && <Typography className="text-red-500 mt-1 text-sm">{errors.unidad_medida}</Typography>}
           </div>

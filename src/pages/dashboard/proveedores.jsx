@@ -43,7 +43,7 @@ export function Proveedores() {
     asesor: "",
   });
   const [currentPage, setCurrentPage] = useState(1);
-  const [proveedoresPerPage] = useState(3);
+  const [proveedoresPerPage] = useState(5);
   const [search, setSearch] = useState("");
   const [formErrors, setFormErrors] = useState({
     nombre: '',
@@ -257,21 +257,38 @@ export function Proveedores() {
   };
 
   const toggleActivo = async (id_proveedor, activo) => {
-    try {
-      await axios.patch(`http://localhost:3000/api/proveedores/${id_proveedor}/estado`, { activo: !activo });
-      fetchProveedores();
-      Toast.fire({
-        icon: 'success',
-        title: `El proveedor ha sido ${!activo ? 'activado' : 'desactivado'} correctamente.`,
-      });
-    } catch (error) {
-      console.error("Error al cambiar el estado del proveedor:", error);
-      Toast.fire({
-        icon: 'error',
-        title: 'Hubo un problema al cambiar el estado del proveedor.',
-      });
+    // Mostrar el diálogo de confirmación con SweetAlert
+    const result = await Swal.fire({
+      title: `¿Estás seguro?`,
+      text: `¿Deseas ${activo ? 'desactivar' : 'activar'} el proveedor?`,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#A62A64',
+      cancelButtonColor: '#000000',
+      confirmButtonText: `Sí, ${activo ? 'desactivar' : 'activar'}`,
+      cancelButtonText: 'Cancelar'
+    });
+  
+    // Si el usuario confirma, proceder con la actualización del estado
+    if (result.isConfirmed) {
+      try {
+        // Realizar la solicitud para cambiar el estado del proveedor
+        await axios.patch(`http://localhost:3000/api/proveedores/${id_proveedor}/estado`, { activo: !activo });
+        fetchProveedores(); // Refrescar la lista de proveedores
+        Toast.fire({
+          icon: 'success',
+          title: `El proveedor ha sido ${!activo ? 'activado' : 'desactivado'} correctamente.`,
+        });
+      } catch (error) {
+        console.error("Error al cambiar el estado del proveedor:", error);
+        Toast.fire({
+          icon: 'error',
+          title: 'Hubo un problema al cambiar el estado del proveedor.',
+        });
+      }
     }
   };
+  
 
   // Obtener proveedores actuales
   const indexOfLastProveedor = currentPage * proveedoresPerPage;
@@ -292,19 +309,31 @@ export function Proveedores() {
       <div className="relative mt-2 h-32 w-full overflow-hidden rounded-xl bg-[url('/img/background-image.png')] bg-cover bg-center">
         <div className="absolute inset-0 h-full w-full bg-gray-900/75" />
       </div>
+
+
       <Card className="mx-3 -mt-16 mb-6 lg:mx-4 border border-blue-gray-100">
-        <CardBody className="p-4">
-          <Button onClick={handleCreate} className="btnagregar" size="sm" startIcon={<PlusIcon />}>
-            Crear Proveedor
-          </Button>
-          <div className="mb-6">
-            <Input
-              type="text"
-              placeholder="Buscar por nombre de proveedor..."
-              value={search}
-              onChange={handleSearchChange}
-            />
-          </div>
+  <CardBody className="p-4">
+  <div className="flex items-center justify-between mb-6">
+  <Button 
+    onClick={handleCreate} 
+    className="btnagregar w-40" // Ajusta el ancho horizontal del botón
+    size="sm" 
+    startIcon={<PlusIcon className="h-4 w-4" />}
+  >
+    Crear Proveedor
+  </Button>
+  <input
+  type="text"
+  placeholder="Buscar por nombre de Proveedor..."
+  value={search}
+  onChange={handleSearchChange}
+  className="ml-[28rem] border border-gray-300 rounded-md focus:border-blue-500 appearance-none shadow-none py-2 px-4 text-sm" // Ajusta el padding vertical y horizontal
+  style={{ width: '265px' }} // Ajusta el ancho del campo de búsqueda
+/>
+</div>
+
+
+
           <div className="mb-1">
             <Typography variant="h6" color="blue-gray" className="mb-4">
               Lista de Proveedores
@@ -325,11 +354,11 @@ export function Proveedores() {
                     <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Número de Contacto
                     </th>
-                    <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th scope="col" className="px-8 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Asesor
                     </th>
                     <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Activo
+                      Estado
                     </th>
                     <th scope="col" className="px-10 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Acciones
@@ -342,10 +371,10 @@ export function Proveedores() {
                       <td className="px-6 py-4 whitespace-nowrap font-medium text-gray-900">
                         <div className="text-sm text-gray-900">{proveedor.nombre}</div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap font-medium text-gray-900">
+                      <td className="px-6 py-4 whitespace-nowrap  text-gray-900">
                         <div className="text-sm text-gray-900">{proveedor.tipo_documento}</div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap font-medium text-gray-900">
+                      <td className="px-6 py-4 whitespace-nowrap text-gray-900">
                         <div className="text-sm text-gray-900">{proveedor.numero_documento}</div>
                       </td>
                       <td className="px-6 py-2 whitespace-nowrap ">

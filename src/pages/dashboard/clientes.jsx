@@ -46,7 +46,7 @@ export function Clientes() {
     updatedAt: ""
   });
   const [currentPage, setCurrentPage] = useState(1);
-  const [clientesPerPage] = useState(3);
+  const [clientesPerPage] = useState(5);
   const [search, setSearch] = useState("");
   const [formErrors, setFormErrors] = useState({});
 
@@ -172,27 +172,39 @@ export function Clientes() {
       <div className="relative mt-2 h-32 w-full overflow-hidden rounded-xl bg-[url('/img/background-image.png')] bg-cover bg-center">
         <div className="absolute inset-0 h-full w-full bg-gray-900/75" />
       </div>
+
+
       <Card className="mx-3 -mt-16 mb-6 lg:mx-4 border border-blue-gray-100">
-        <CardBody className="p-4">
-          {showCreateForm ? (
-            <ClienteCrear
-              selectedCliente={selectedCliente}
-              setSelectedCliente={setSelectedCliente}
-              fetchClientes={fetchClientes}
-              handleHideCreateForm={handleHideCreateForm}
-            />
-          ) : (
-            <>
-              <Button onClick={handleShowCreateForm} className="btnagregar mb-6" size="sm" startIcon={<PlusIcon />}>
-                Crear Cliente
-              </Button>
-              <Input
-                type="text"
-                placeholder="Buscar por nombre..."
-                value={search}
-                onChange={handleSearchChange}
-                className="mb-6"
-              />
+  <CardBody className="p-4">
+    {showCreateForm ? (
+      <ClienteCrear
+        selectedCliente={selectedCliente}
+        setSelectedCliente={setSelectedCliente}
+        fetchClientes={fetchClientes}
+        handleHideCreateForm={handleHideCreateForm}
+      />
+    ) : (
+      <>
+        <div className="flex items-center justify-between mb-6">
+          <Button 
+            onClick={handleShowCreateForm} 
+            className="btnagregar w-40" // Ajusta el ancho horizontal del botón
+            size="sm" 
+            startIcon={<PlusIcon className="h-4 w-4" />}
+          >
+            Crear Cliente
+          </Button>
+          <input
+            type="text"
+            placeholder="Buscar por nombre..."
+            value={search}
+            onChange={handleSearchChange}
+            className="ml-4 border border-gray-300 rounded-md focus:border-blue-500 appearance-none shadow-none py-2 px-4 text-sm"
+            style={{ width: '265px' }} // Ajusta el ancho del campo de búsqueda
+          />
+        </div>
+
+              
               <div className="mb-1">
                 <Typography variant="h6" color="blue-gray" className="mb-4">
                   Lista de Clientes

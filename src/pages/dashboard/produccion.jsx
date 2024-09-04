@@ -11,7 +11,7 @@ import {
   DialogBody,
   DialogFooter,
 } from "@material-tailwind/react";
-import { PlusIcon, EyeIcon, CogIcon, ArrowDownTrayIcon } from "@heroicons/react/24/solid";
+import { PlusIcon, EyeIcon, CogIcon, ArrowDownTrayIcon, ArchiveBoxArrowDownIcon, PencilIcon } from "@heroicons/react/24/solid";
 import axios from "../../utils/axiosConfig";
 import Swal from 'sweetalert2';
 import OrdenesProducidas from "./OrdenesProducidas";
@@ -222,7 +222,7 @@ export function OrdenesProduccion() {
                           Productos
                         </th>
                         <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Activo
+                          Estado
                         </th>
                         <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                           Acciones
@@ -283,7 +283,7 @@ export function OrdenesProduccion() {
                                 color="green"
                                 onClick={() => handleProducir(orden.id_orden)}
                               >
-                                <CogIcon className="h-4 w-4" />
+                                <ArchiveBoxArrowDownIcon className="h-4 w-4" />
                               </IconButton>
                               <IconButton
                                 className="btnedit"
@@ -291,12 +291,12 @@ export function OrdenesProduccion() {
                                 color="blue"
                                 onClick={() => handleEditOrden(orden)}
                               >
-                                <CogIcon className="h-4 w-4" />
+                                <PencilIcon className="h-4 w-4" />
                               </IconButton>
                               <IconButton
-                                className="btndescargar"
+                                 className="btnpdf" 
                                 size="sm"
-                                color="blue-gray"
+                                
                                 onClick={() => handleDownloadDetails(orden)}
                               >
                                 <ArrowDownTrayIcon className="h-4 w-4" />
@@ -378,7 +378,7 @@ export function OrdenesProduccion() {
             <Typography className="text-sm">{selectedOrden.fecha_orden}</Typography>
             <Typography variant="subtitle2" className="font-bold text-gray-800">Producción Completada:</Typography>
             <Typography className="text-sm">{selectedOrden.produccion_completada ? "Sí" : "No"}</Typography>
-            <Typography variant="subtitle2" className="font-bold text-gray-800">Activo:</Typography>
+            <Typography variant="subtitle2" className="font-bold text-gray-800">Estado:</Typography>
             <Typography className="text-sm">{selectedOrden.activo ? "Sí" : "No"}</Typography>
             <Typography variant="subtitle2" className="font-bold text-gray-800">Productos:</Typography>
             {selectedOrden.ordenProduccionDetalles?.map(detalle => (

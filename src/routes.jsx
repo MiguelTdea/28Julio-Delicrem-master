@@ -27,7 +27,7 @@ const allRoutes = [
   {
     title: "autoriza",
     layout: "auth",
-    visible: false, // Propiedad para indicar que esta ruta no debe ser visible
+    visible: false, // invisible
     pages: [
       {
         icon: <ServerStackIcon {...icon} />,
@@ -92,12 +92,7 @@ const allRoutes = [
     layout: "dashboard",
     visible: true,
     pages: [
-      {
-        icon: <ShoppingCartIcon {...icon} />,
-        name: "Gestión de Compras",
-        path: "/compras",
-        element: <Compras />,
-      },
+
       {
         icon: <TruckIcon {...icon} />,
         name: "Proveedores",
@@ -124,30 +119,41 @@ const allRoutes = [
         element: <FichasTecnicas />,
       },
       {
-        icon: <InboxStackIcon {...icon} />,
-        name: "Producción",
-        path: "/produccion",
-        element: <OrdenesProduccion />,
+        icon: <ShoppingCartIcon {...icon} />,
+        name: "Gestión de Compras",
+        path: "/compras",
+        element: <Compras />,
       },
+    ],
+  },
+
+  {
+    title: "Producción",
+    layout: "dashboard",
+    visible: true,
+    pages: [
       {
         icon: <InboxStackIcon {...icon} />,
         name: "Productos",
         path: "/productoterminado",
         element: <ProductoTerminado />,
       },
+      {
+        icon: <InboxStackIcon {...icon} />,
+        name: "Ordenes de Producción",
+        path: "/produccion",
+        element: <OrdenesProduccion />,
+      },
+
     ],
   },
+
   {
     title: "Ventas",
     layout: "dashboard",
     visible: true,
     pages: [
-      {
-        icon: <DocumentCurrencyDollarIcon {...icon} />,
-        name: "Gestión de Ventas",
-        path: "/ventas",
-        element: <Ventas />,
-      },
+
       {
         icon: <UsersIcon {...icon} />,
         name: "Clientes",
@@ -159,6 +165,12 @@ const allRoutes = [
         name: "Pedidos",
         path: "/pedidos",
         element: <Pedidos />,
+      },
+      {
+        icon: <DocumentCurrencyDollarIcon {...icon} />,
+        name: "Gestión de Ventas",
+        path: "/ventas",
+        element: <Ventas />,
       },
     ],
   },

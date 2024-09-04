@@ -17,6 +17,7 @@ import Swal from 'sweetalert2';
 import { CrearFichaTecnica } from './CrearFichaTecnica';
 import { EditarFichaTecnica } from './EditarFichaTecnica';
 
+
 export function FichasTecnicas() {
   const [fichas, setFichas] = useState([]);
   const [productos, setProductos] = useState([]);
@@ -35,11 +36,13 @@ export function FichasTecnicas() {
   const [fichasPerPage] = useState(5);
   const [search, setSearch] = useState("");
 
+
   useEffect(() => {
     fetchFichas();
     fetchProductos();
     fetchInsumos();
   }, []);
+
 
   const fetchFichas = async () => {
     try {
@@ -51,6 +54,7 @@ export function FichasTecnicas() {
     }
   };
 
+
   const fetchProductos = async () => {
     try {
       const response = await axios.get("http://localhost:3000/api/productos");
@@ -59,6 +63,7 @@ export function FichasTecnicas() {
       console.error("Error fetching productos:", error);
     }
   };
+
 
   const fetchInsumos = async () => {
     try {
@@ -69,9 +74,11 @@ export function FichasTecnicas() {
     }
   };
 
+
   useEffect(() => {
     filterFichas();
   }, [search, fichas]);
+
 
   const filterFichas = () => {
     const filtered = fichas.filter((ficha) =>
@@ -80,11 +87,13 @@ export function FichasTecnicas() {
     setFilteredFichas(filtered);
   };
 
+
   const handleEdit = (ficha) => {
     setSelectedFicha(ficha);
     setEditMode(true);
     setShowForm(true);
   };
+
 
   const handleCreate = () => {
     setSelectedFicha({
@@ -96,6 +105,7 @@ export function FichasTecnicas() {
     setEditMode(false);
     setShowForm(true);
   };
+
 
   const handleDelete = async (ficha) => {
     const result = await Swal.fire({
@@ -109,6 +119,7 @@ export function FichasTecnicas() {
       cancelButtonText: 'Cancelar'
     });
 
+
     if (result.isConfirmed) {
       try {
         await axios.delete(`http://localhost:3000/api/fichastecnicas/${ficha.id_ficha}`);
@@ -121,25 +132,57 @@ export function FichasTecnicas() {
     }
   };
 
+
+  const Toast = Swal.mixin({
+    toast: true,
+    position: "top-end",
+    showConfirmButton: false,
+    timer: 3000,
+    timerProgressBar: true,
+    didOpen: (toast) => {
+      toast.addEventListener("mouseenter", Swal.stopTimer);
+      toast.addEventListener("mouseleave", Swal.resumeTimer);
+    },
+  });
+  
   const toggleActivo = async (id_ficha, activo) => {
     try {
-      await axios.patch(`http://localhost:3000/api/fichastecnicas/${id_ficha}/estado`, { activo: !activo });
-      fetchFichas();
+      // Confirmación de SweetAlert
+      const result = await Swal.fire({
+        title: `¿Estás seguro?`,
+        text: `¿Deseas ${activo ? 'desactivar' : 'activar'} esta ficha técnica?`,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#A62A64',
+        cancelButtonColor: '#000000',
+        confirmButtonText: `Sí, ${activo ? 'desactivar' : 'activar'}`,
+        cancelButtonText: 'Cancelar'
+      });
+  
+      // Si el usuario confirma la acción
+      if (result.isConfirmed) {
+        await axios.patch(`http://localhost:3000/api/fichastecnicas/${id_ficha}/estado`, { activo: !activo });
+        fetchFichas();
+        Toast.fire({
+          icon: 'success',
+          title: `Ficha técnica ${activo ? 'desactivada' : 'activada'} correctamente.`
+        });
+      }
     } catch (error) {
       console.error("Error al cambiar el estado de la ficha técnica:", error);
-      Swal.fire({
+      Toast.fire({
         icon: 'error',
-        title: 'Hubo un problema al cambiar el estado de la ficha técnica.',
-        showConfirmButton: false,
-        timer: 1500
+        title: 'Hubo un problema al cambiar el estado de la ficha técnica.'
       });
     }
   };
+
 
   const handleViewDetails = (ficha) => {
     setSelectedFicha(ficha);
     setDetailsOpen(true);
   };
+
 
   const handleSaveSuccess = () => {
     setShowForm(false);
@@ -147,21 +190,26 @@ export function FichasTecnicas() {
     fetchFichas();
   };
 
+
   const handleCancel = () => {
     setShowForm(false);
     setEditMode(false);
   };
 
+
   const indexOfLastFicha = currentPage * fichasPerPage;
   const indexOfFirstFicha = indexOfLastFicha - fichasPerPage;
   const currentFichas = filteredFichas.slice(indexOfFirstFicha, indexOfLastFicha);
+
 
   const pageNumbers = [];
   for (let i = 1; i <= Math.ceil(filteredFichas.length / fichasPerPage); i++) {
     pageNumbers.push(i);
   }
 
+
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
+
 
   return (
     <>
@@ -194,16 +242,16 @@ export function FichasTecnicas() {
                         <th scope="col" className="px-20 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                           Descripción
                         </th>
-                        <th scope="col" className="px-20 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th scope="col" className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                           Producto
                         </th>
-                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th scope="col" className="px-12 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                           Insumos
                         </th>
                         <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Activo
+                          Estado
                         </th>
-                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th scope="col" className="px-12 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                           Acciones
                         </th>
                       </tr>
@@ -211,15 +259,15 @@ export function FichasTecnicas() {
                     <tbody className="bg-white divide-y divide-gray-200">
                       {currentFichas.map((ficha) => (
                         <tr key={ficha.id_ficha}>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                             <div className="text-sm text-gray-900">{ficha.descripcion}</div>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm">
+                          <td className="px-0 py-4 whitespace-nowrap text-sm ">
                             <div className="text-sm text-gray-900">
                               {productos.find(producto => producto.id_producto === ficha.id_producto)?.nombre || 'Producto no encontrado'}
                             </div>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm">
+                          <td className="px-8 py-4 whitespace-nowrap text-sm">
                             <div className="text-sm text-gray-900">{ficha.insumos}</div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm">
@@ -231,7 +279,7 @@ export function FichasTecnicas() {
                                 onChange={() => toggleActivo(ficha.id_ficha, ficha.activo)}
                               />
                               <div
-                                className={`relative inline-flex items-center h-6 w-12 rounded-full p-1 duration-300 ease-in-out ${
+                                className={`relative inline-flex items-center cursor-pointer transition-transform duration-300 ease-in-out h-6 w-12 rounded-full focus:outline-none ${
                                   ficha.activo
                                     ? 'bg-gradient-to-r from-green-800 to-green-600 hover:from-green-600 hover:to-green-400 shadow-lg'
                                     : 'bg-gradient-to-r from-red-800 to-red-500 hover:from-red-600 hover:to-red-400 shadow-lg'
@@ -245,14 +293,15 @@ export function FichasTecnicas() {
                               </div>
                             </label>
                           </td>
-                          <td className="flex space-x-1">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                          <div className="flex space-x-2">
                             <IconButton
                               className="btnedit"
                               size="sm"
                               onClick={() => handleEdit(ficha)}
                               disabled={!ficha.activo}
                             >
-                              <PencilIcon className="h-5 w-5" />
+                              <PencilIcon className="h-4 w-4" />
                             </IconButton>
                             <IconButton
                               className="cancelar"
@@ -270,6 +319,7 @@ export function FichasTecnicas() {
                             >
                               <EyeIcon className="h-4 w-4" />
                             </IconButton>
+                            </div>
                           </td>
                         </tr>
                       ))}
@@ -317,69 +367,73 @@ export function FichasTecnicas() {
           )}
         </CardBody>
       </Card>
-      
+     
       {/* Diálogo para ver detalles con estilo de versión anterior */}
       <Dialog open={detailsOpen} handler={() => setDetailsOpen(!detailsOpen)} className="overflow-auto max-h-[90vh]">
-        <DialogHeader className="text-black p-4">Detalles de la Ficha Técnica</DialogHeader>
-        <DialogBody divider className="overflow-auto max-h-[60vh] p-4">
-          <div className="mb-4">
-            <Typography variant="h5" color="blue-gray">
-              Información de la Ficha Técnica
-            </Typography>
-            <table className="min-w-full mt-2">
-              <tbody>
-                <tr>
-                  <td className="font-semibold">Producto:</td>
-                  <td>{productos.find(producto => producto.id_producto === selectedFicha.id_producto)?.nombre || 'Desconocido'}</td>
-                </tr>
-                <tr>
-                  <td className="font-semibold">Descripción:</td>
-                  <td>{selectedFicha.descripcion}</td>
-                </tr>
-                <tr>
-                  <td className="font-semibold">Insumos:</td>
-                  <td>{selectedFicha.insumos}</td>
-                </tr>
-                
-                <tr>
-                  <td className="font-semibold">Creado:</td>
-                  <td>{new Date(selectedFicha.createdAt).toLocaleString()}</td>
-                </tr>
-                <tr>
-                  <td className="font-semibold">Actualizado:</td>
-                  <td>{new Date(selectedFicha.updatedAt).toLocaleString()}</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-          <div className="mt-4">
-            <Typography variant="h5" color="blue-gray">
-              Detalles de Insumos
-            </Typography>
-            <table className="min-w-full mt-4">
-              <thead>
-                <tr className="bg-gray-200">
-                  <th className="px-4 py-2 text-left font-semibold">Insumo</th>
-                  <th className="px-4 py-2 text-left font-semibold">Cantidad</th>
-                </tr>
-              </thead>
-              <tbody>
-                {selectedFicha.detallesFichaTecnicat.map((detalle, index) => (
-                  <tr key={index}>
-                    <td>{insumos.find(insumo => insumo.id_insumo === detalle.id_insumo)?.nombre || 'Desconocido'}</td>
-                    <td>{detalle.cantidad}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </DialogBody>
-        <DialogFooter className="bg-white p-4 flex justify-end">
-          <Button variant="gradient" color="blue-gray" onClick={() => setDetailsOpen(false)}>
-            Cerrar
-          </Button>
-        </DialogFooter>
-      </Dialog>
+  <DialogHeader className="text-black p-4 border-b border-gray-200">
+    <Typography variant="h5" className="font-semibold">Detalles de la Ficha Técnica</Typography>
+  </DialogHeader>
+  <DialogBody divider className="overflow-auto max-h-[60vh] p-4">
+    <div className="mb-4">
+      <Typography variant="h6" color="blue-gray" className="font-semibold mb-2">
+        Información de la Ficha Técnica
+      </Typography>
+      <table className="min-w-full border-separate border-spacing-4">
+        <tbody>
+          <tr>
+            <td className="font-medium text-gray-700">Producto:</td>
+            <td className="text-gray-900">{productos.find(producto => producto.id_producto === selectedFicha.id_producto)?.nombre || 'Desconocido'}</td>
+          </tr>
+          <tr>
+            <td className="font-medium text-gray-700">Descripción:</td>
+            <td className="text-gray-900">{selectedFicha.descripcion}</td>
+          </tr>
+          <tr>
+            <td className="font-medium text-gray-700">Descripción detallada de Insumos:</td>
+            <td className="text-gray-900">{selectedFicha.insumos}</td>
+          </tr>
+          <tr>
+            <td className="font-medium text-gray-700">Creado:</td>
+            <td className="text-gray-900">{new Date(selectedFicha.createdAt).toLocaleString()}</td>
+          </tr>
+          <tr>
+            <td className="font-medium text-gray-700">Actualizado:</td>
+            <td className="text-gray-900">{new Date(selectedFicha.updatedAt).toLocaleString()}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div className="mt-6 text-center">
+      <Typography variant="h6" color="blue-gray" className="font-semibold mb-4">
+        Detalles de Insumos
+      </Typography>
+      <div className="inline-block min-w-full">
+        <table className="min-w-full mx-auto border-collapse">
+          <thead>
+            <tr className="bg-gray-200">
+              <th className="px-6 py-2 text-center font-semibold text-gray-700">Insumo</th>
+              <th className="px-6 py-2 text-center font-semibold text-gray-700">Cantidad</th>
+            </tr>
+          </thead>
+          <tbody>
+            {selectedFicha.detallesFichaTecnicat.map((detalle, index) => (
+              <tr key={index} className="border-t border-gray-200">
+                <td className="px-6 py-2 text-gray-900">{insumos.find(insumo => insumo.id_insumo === detalle.id_insumo)?.nombre || 'Desconocido'}</td>
+                <td className="px-6 py-2 text-gray-900">{detalle.cantidad}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </DialogBody>
+  <DialogFooter className="bg-white p-4 flex justify-end border-t border-gray-200">
+    <Button variant="gradient" className="btncancelarm" size="sm" color="blue-gray" onClick={() => setDetailsOpen(false)}>
+      Cerrar
+    </Button>
+  </DialogFooter>
+</Dialog>
+
     </>
   );
 }

@@ -227,21 +227,24 @@ export function Pedidos() {
       <div className="relative mt-2 h-32 w-full overflow-hidden rounded-xl bg-[url('/img/background-image.png')] bg-cover bg-center">
         <div className="absolute inset-0 h-full w-full bg-gray-900/75" />
       </div>
-      <Card className="mx-3 -mt-16 mb-6 lg:mx-4 border border-blue-gray-100">
+      <Card className="mx-2 -mt-16 mb-6 lg:mx-4 border border-blue-gray-100">
         <CardBody className="p-4">
           {showForm === "lista" && ( // Mostrar la lista de pedidos
             <>
+              <div className="flex items-center justify-between mb-6">
               <Button onClick={handleCreate} className="btnagregar" size="sm" startIcon={<PlusIcon />}>
                 Crear Pedido
               </Button>
-              <div className="mb-6">
-                <Input
-                  type="text"
-                  placeholder="Buscar por cliente o número de documento..."
-                  value={search}
-                  onChange={handleSearchChange}
-                />
+              <input
+                type="text"
+                placeholder="Buscar por Cliente..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="ml-4 border border-gray-300 rounded-md focus:border-blue-500 appearance-none shadow-none py-2 px-4 text-sm" // Ajusta el padding vertical y horizontal
+                style={{ width: '265px' }} // Ajusta el ancho del campo de búsqueda
+              />
               </div>
+
               <div className="mb-1">
                 <Typography variant="h6" color="blue-gray" className="mb-4">
                   Lista de Pedidos
@@ -254,9 +257,9 @@ export function Pedidos() {
                         <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Número Documento</th>
                         <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha de Entrega</th>
                         <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
-                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Activo</th>
+                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Anular</th>
                         <th scope="col" className="px-10 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
-                        <th scope="col" className="px-10 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actualizar Estado</th>
+                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actualizar    Estado</th>
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
@@ -265,7 +268,7 @@ export function Pedidos() {
                           <td className="px-6 py-2 whitespace-nowrap text-sm font-medium text-gray-900">{pedido.clientesh.nombre}</td>
                           <td className="px-6 py-2 whitespace-nowrap text-sm text-gray-500">{pedido.clientesh.numero_documento}</td>
                           <td className="px-6 py-2 whitespace-nowrap text-sm text-gray-500">{pedido.fecha_entrega.split('T')[0]}</td>
-                          <td className="px-6 py-2 whitespace-nowrap text-sm text-gray-500">{pedido.estado}</td>
+                          <td className="px-2 py-1 whitespace-nowrap text-sm text-gray-500">{pedido.estado}</td>
                           <td className="px-6 py-2 whitespace-nowrap text-sm text-gray-500">
                             <button
                               onClick={() => toggleActivo(pedido.id_pedido, pedido.activo)}
@@ -364,10 +367,10 @@ export function Pedidos() {
             />
           )}
 
-          {showForm === "estado" && ( // Mostrar diálogo para cambiar estado
-            <Dialog open={true} handler={handleEstadoClose} className="custom-modal max-w-sm">
+{showForm === "estado" && ( // Mostrar diálogo para cambiar estado
+            <Dialog open={true} handler={handleEstadoClose} className="custom-modal ">
               <DialogHeader className="text-black p-2 text-lg">Actualizar Estado del Pedido</DialogHeader>
-              <DialogBody divider className="p-1 flex flex-col gap-4">
+              <DialogBody divider className="p-10 flex flex-col gap-8">
                 <Select
                   label="Estado"
                   name="estado"
@@ -403,7 +406,9 @@ export function Pedidos() {
           {showForm === "anular" && ( // Mostrar diálogo para anular pedido
             <Dialog open={true} handler={() => setShowForm("lista")} className="max-w-xs w-11/12 bg-white rounded-lg shadow-lg" size="xs">
               <DialogHeader className="bg-gray-100 text-gray-800 p-3 rounded-t-lg border-b border-gray-300">
-                <Typography variant="h6" className="font-semibold">Motivo de Anulación</Typography>
+                <Typography variant="h6" className="font-semibold">
+                  Motivo de Anulación
+                  </Typography>
               </DialogHeader>
               <DialogBody divider className="p-4 bg-white">
                 <Input 

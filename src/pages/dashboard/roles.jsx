@@ -1,7 +1,5 @@
 
 
-
-
 import {
   Card,
   CardBody,
@@ -22,8 +20,6 @@ import axios from "../../utils/axiosConfig";
 import Swal from 'sweetalert2';
 
 
-
-
 // Definir el Toast
 const Toast = Swal.mixin({
   toast: true,
@@ -36,8 +32,6 @@ const Toast = Swal.mixin({
     toast.onmouseleave = Swal.resumeTimer;
   }
 });
-
-
 
 
 export function Roles() {
@@ -58,14 +52,10 @@ export function Roles() {
   const [errors, setErrors] = useState({ nombre: "", permisos: "" });
 
 
-
-
   useEffect(() => {
     fetchRoles();
     fetchPermisos();
   }, []);
-
-
 
 
   const fetchRoles = async () => {
@@ -79,8 +69,6 @@ export function Roles() {
   };
 
 
-
-
   const fetchPermisos = async () => {
     try {
       const response = await axios.get("http://localhost:3000/api/permisos");
@@ -91,13 +79,9 @@ export function Roles() {
   };
 
 
-
-
   useEffect(() => {
     filterRoles();
   }, [search, roles]);
-
-
 
 
   const filterRoles = () => {
@@ -108,19 +92,15 @@ export function Roles() {
   };
 
 
-
-
   const handleOpen = () => {
     setOpen(!open);
- 
+  
     if (!open) { // Si el modal se está cerrando, limpiar los errores
       setErrors({ nombre: "", permisos: "" });
     }
   };
- 
+  
   const handleDetailsOpen = () => setDetailsOpen(!detailsOpen);
-
-
 
 
   const handleEdit = (role) => {
@@ -134,8 +114,6 @@ export function Roles() {
   };
 
 
-
-
   const handleCreate = () => {
     setSelectedRole({
       nombre: "",
@@ -145,8 +123,6 @@ export function Roles() {
     setEditMode(false);
     handleOpen();
   };
-
-
 
 
   const handleDelete = async (role) => {
@@ -160,8 +136,6 @@ export function Roles() {
       confirmButtonText: 'Sí, eliminar',
       cancelButtonText: 'Cancelar'
     });
-
-
 
 
     if (result.isConfirmed) {
@@ -194,7 +168,7 @@ export function Roles() {
   const validateForm = () => {
     let valid = true;
     const newErrors = { nombre: "", permisos: "" };
- 
+  
     if (!selectedRole.nombre.trim()) {
       newErrors.nombre = "Por favor ingrese un nombre para el rol.";
       valid = false;
@@ -214,20 +188,16 @@ export function Roles() {
       newErrors.nombre = "Ya existe un rol con este nombre.";
       valid = false;
     }
- 
+  
     setErrors(newErrors);
     return valid;
   };
- 
- 
-
-
+  
+  
 
 
   const handleSave = async () => {
     if (!validateForm()) return;
-
-
 
 
     try {
@@ -261,16 +231,14 @@ export function Roles() {
   };
 
 
-
-
   const handleChange = (e) => {
     const { name, value } = e.target;
     setSelectedRole({ ...selectedRole, [name]: value });
- 
+  
     // Validación en tiempo real para el campo "nombre"
     if (name === 'nombre') {
       const newErrors = { ...errors };
- 
+  
       if (!value.trim()) {
         newErrors.nombre = "Por favor ingrese un nombre para el rol.";
       } else if (value.length < 4) {
@@ -288,14 +256,12 @@ export function Roles() {
       } else {
         newErrors.nombre = ""; // Eliminar el mensaje de error si la validación es correcta
       }
- 
+  
       setErrors(newErrors);
     }
   };
- 
- 
-
-
+  
+  
 
 
   const handlePermissionChange = (id_permiso) => {
@@ -308,13 +274,9 @@ export function Roles() {
   };
 
 
-
-
   const handleSearchChange = (e) => {
     setSearch(e.target.value);
   };
-
-
 
 
   const handleViewDetails = (role) => {
@@ -324,8 +286,6 @@ export function Roles() {
     });
     handleDetailsOpen();
   };
-
-
 
 
   const toggleActivo = async (id_rol, activo) => {
@@ -339,14 +299,14 @@ export function Roles() {
       confirmButtonText: `Sí, ${activo ? 'desactivar' : 'activar'}`,
       cancelButtonText: 'Cancelar'
     });
- 
+  
     if (result.isConfirmed) {
       try {
         if (activo) { // Solo verificamos si intentamos desactivar el rol
           // Verificar si existen usuarios con el rol que se intenta desactivar
           const response = await axios.get(`http://localhost:3000/api/usuarios`);
           const usuariosConRol = response.data.filter(usuario => usuario.id_rol === id_rol);
- 
+  
           if (usuariosConRol.length > 0) {
             Swal.fire({
               icon: 'warning',
@@ -359,7 +319,7 @@ export function Roles() {
             return;
           }
         }
- 
+  
         // Si no hay usuarios con el rol, o si se está activando el rol, proceder con el cambio de estado
         await axios.patch(`http://localhost:3000/api/roles/${id_rol}/estado`, { activo: !activo });
         fetchRoles();
@@ -377,13 +337,10 @@ export function Roles() {
     }
   };
 
-
   // Obtener roles actuales
   const indexOfLastRole = currentPage * rolesPerPage;
   const indexOfFirstRole = indexOfLastRole - rolesPerPage;
   const currentRoles = filteredRoles.slice(indexOfFirstRole, indexOfLastRole);
-
-
 
 
   const pageNumbers = [];
@@ -392,12 +349,8 @@ export function Roles() {
   }
 
 
-
-
   // Cambiar de página
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
-
-
 
 
   return (
@@ -407,15 +360,13 @@ export function Roles() {
 </div>
 
 
-
-
 <Card className="mx-3 -mt-16 mb-6 lg:mx-4 border border-blue-gray-100">
   <CardBody className="p-4">
   <div className="flex items-center justify-between mb-6">
-  <Button
-    onClick={handleCreate}
+  <Button 
+    onClick={handleCreate} 
     className="btnagregar w-40" // Ajusta el ancho horizontal del botón
-    size="sm"
+    size="sm" 
     startIcon={<PlusIcon  />}
   >
     Crear Rol
@@ -430,7 +381,6 @@ export function Roles() {
 />
 </div>
 
-
           <div className="mb-1">
             <Typography variant="h6" color="blue-gray" className="mb-4">
               Lista de Roles
@@ -443,8 +393,8 @@ export function Roles() {
                   </Typography>
                   <Typography color="blue-gray">
                     Permisos: {(role.permisosRol ? role.permisosRol : []).map(p => p.nombre_permiso).join(', ')}
-                  </Typography>                
-                  <div className="flex justify-between items-center mt-4 px-14">
+                  </Typography>                 
+                  <div className="flex justify-between items-center mt-4 px-14"> 
                     <button
                     onClick={() => toggleActivo(role.id_rol, role.activo)}
                      className={`relative inline-flex items-center cursor-pointer transition-transform duration-300 ease-in-out h-6 w-12 rounded-full focus:outline-none ${
@@ -468,7 +418,7 @@ export function Roles() {
       className={`absolute right-1 flex items-center text-xs text-white font-semibold ${
         role.activo ? 'opacity-100' : 'opacity-0'
       }`}
-        >    
+        >     
           </span>
               </button>
                     <div className="flex gap-2">
@@ -503,8 +453,6 @@ export function Roles() {
           </div>
         </CardBody>
       </Card>
-
-
 
 
       <Dialog open={open} handler={handleOpen} className="custom-modal">
@@ -547,8 +495,6 @@ export function Roles() {
       </Dialog>
 
 
-
-
       <Dialog open={detailsOpen} handler={handleDetailsOpen} className="max-w-xs w-11/12" size="xs" >
         <DialogHeader>Detalles del Rol</DialogHeader>
         <DialogBody divider>
@@ -572,4 +518,3 @@ export function Roles() {
     </>
   );
 }
-
