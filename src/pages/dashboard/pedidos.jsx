@@ -368,40 +368,49 @@ export function Pedidos() {
           )}
 
 {showForm === "estado" && ( // Mostrar diálogo para cambiar estado
-            <Dialog open={true} handler={handleEstadoClose} className="custom-modal ">
-              <DialogHeader className="text-black p-2 text-lg">Actualizar Estado del Pedido</DialogHeader>
-              <DialogBody divider className="p-10 flex flex-col gap-8">
-                <Select
-                  label="Estado"
-                  name="estado"
-                  value={selectedEstado}
-                  onChange={(e) => setSelectedEstado(e)}
-                  className="w-full"
-                  required
-                  disabled={selectedPedido.estado === "Completado"}
-                >
-                  {selectedPedido.pagado ? (
-                    <>
-                      <Option value="Pendiente de Preparación">Pendiente de Preparación</Option>
-                      <Option value="En Preparación">En Preparación</Option>
-                      <Option value="Listo Para Entrega">Listo Para Entrega</Option>
-                      <Option value="Completado">Completado</Option>
-                    </>
-                  ) : (
-                    <Option value="Esperando Pago">Esperando Pago</Option>
-                  )}
-                </Select>
-              </DialogBody>
-              <DialogFooter className="bg-white p-2 flex justify-end gap-2">
-                <Button variant="text" className="btncancelarm" size="sm" onClick={handleEstadoClose}>
-                  Cancelar
-                </Button>
-                <Button variant="gradient" className="btnagregarm" size="sm" onClick={handleUpdateEstado}>
-                  Actualizar Estado
-                </Button>
-              </DialogFooter>
-            </Dialog>
-          )}
+  <Dialog open={true} handler={handleEstadoClose} className="custom-modal">
+    <DialogHeader className="text-black p-2 text-lg">Actualizar Estado del Pedido</DialogHeader>
+    <DialogBody divider className="p-10 flex flex-col gap-8">
+      <Select
+        label="Estado"
+        name="estado"
+        value={selectedEstado}
+        onChange={(e) => setSelectedEstado(e)}
+        className="w-full"
+        required
+        disabled={selectedPedido.estado === "Completado"}
+      >
+        {selectedPedido.pagado ? (
+          <>
+            {selectedPedido.estado === "Pendiente de Preparación" && (
+              <Option value="En Preparación">En Preparación</Option>
+            )}
+            {selectedPedido.estado === "En Preparación" && (
+              <Option value="Listo Para Entrega">Listo Para Entrega</Option>
+            )}
+            {selectedPedido.estado === "Listo Para Entrega" && (
+              <Option value="Completado">Completado</Option>
+            )}
+            {selectedPedido.estado === "Esperando Pago" && (
+              <Option value="Pendiente de Preparación">Pendiente de Preparación</Option>
+            )}
+          </>
+        ) : (
+          <Option value="Esperando Pago">Esperando Pago</Option>
+        )}
+      </Select>
+    </DialogBody>
+    <DialogFooter className="bg-white p-2 flex justify-end gap-2">
+      <Button variant="text" className="btncancelarm" size="sm" onClick={handleEstadoClose}>
+        Cancelar
+      </Button>
+      <Button variant="gradient" className="btnagregarm" size="sm" onClick={handleUpdateEstado}>
+        Actualizar Estado
+      </Button>
+    </DialogFooter>
+  </Dialog>
+)}
+
 
           {showForm === "anular" && ( // Mostrar diálogo para anular pedido
             <Dialog open={true} handler={() => setShowForm("lista")} className="max-w-xs w-11/12 bg-white rounded-lg shadow-lg" size="xs">

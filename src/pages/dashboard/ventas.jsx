@@ -16,12 +16,14 @@ import {
   Option,
   Switch,
 } from "@material-tailwind/react";
-import { PlusIcon, EyeIcon, PencilIcon, TrashIcon, ArrowDownIcon } from "@heroicons/react/24/solid";
+import { PlusIcon, EyeIcon, TrashIcon, ArrowDownIcon } from "@heroicons/react/24/solid";
 import axios from "../../utils/axiosConfig";
 import Swal from "sweetalert2";
 import 'jspdf-autotable';
 import { Producir } from './Producir';
 import { CrearVenta } from './CrearVenta'; // Importar el componente CrearVenta
+import { GenerarInformeVenta } from './GenerarInformeVenta'; // Importar el componente para generar informe de ventas
+import { ReporteVentas } from './ReporteVentas'; // Importamos el nuevo reporte de ventas
 
 // Configuración de Toast
 const Toast = Swal.mixin({
@@ -46,6 +48,9 @@ export function Ventas() {
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [cancelOpen, setCancelOpen] = useState(false); // Estado para controlar el modal de anulación
   const [motivoAnulacion, setMotivoAnulacion] = useState(''); // Estado para el motivo de anulación
+  // Estado para controlar el formulario de informe
+  const [mostrarReporteVentas, setMostrarReporteVentas] = useState(false); // Nuevo estado para manejar la visibilidad del reporte
+  const [mostrarInforme, setMostrarInforme] = useState(false);
   const [ventaToCancel, setVentaToCancel] = useState(null); 
   const [productionOpen, setProductionOpen] = useState(false);
   const [selectedVenta, setSelectedVenta] = useState({
@@ -72,6 +77,15 @@ export function Ventas() {
     fetchProductos();
     fetchPedidos();
   }, []);
+
+  // Función para cancelar el informe
+  const handleCancelarInforme = () => {
+    setMostrarInforme(false);
+  };
+
+  const handleGenerarReporte = () => {
+    setMostrarReporteVentas(true); // Activar la generación de reporte
+  };
 
   const fetchVentas = async () => {
     try {
@@ -148,35 +162,6 @@ export function Ventas() {
     setDetailsOpen(true);
   };
 
-  const handleUpdateState = async (id_venta) => {
-    const { value: estado } = await Swal.fire({
-      title: 'Actualizar Estado',
-      input: 'select',
-      inputOptions: {
-        pendiente: 'Pendiente',
-        'en preparación': 'En preparación',
-        completado: 'Completado',
-      },
-      inputPlaceholder: 'Selecciona el estado',
-      showCancelButton: true,
-      confirmButtonColor: '#3085d6',
-      cancelButtonColor: '#aaa',
-      confirmButtonText: 'Actualizar',
-      cancelButtonText: 'Cancelar',
-    });
-
-    if (estado) {
-      try {
-        await axios.put(`http://localhost:3000/api/ventas/${id_venta}/estado`, { estado });
-        Swal.fire("¡Actualización exitosa!", "El estado de la venta ha sido actualizado.", "success");
-        fetchVentas();
-      } catch (error) {
-        console.error("Error updating estado:", error);
-        Swal.fire("Error", "Hubo un problema al actualizar el estado de la venta.", "error");
-      }
-    }
-  };
-
   const handleToggleActivo = async (id_venta, activo) => {
     const venta = ventas.find(v => v.id_venta === id_venta);
     if (!venta) {
@@ -201,7 +186,7 @@ export function Ventas() {
         // Si la venta está siendo anulada (activo === false), se solicita el motivo de anulación
         setVentaToCancel(id_venta);
         setCancelOpen(true);
-    } 
+    }
     // Eliminamos la opción de volver a activar
   };
 
@@ -277,11 +262,7 @@ export function Ventas() {
     });
 
     // Totales
-    const subtotal = parseFloat(venta.total) / 1.19;
-    const iva = parseFloat(venta.total) - subtotal;
-
-    doc.text(`Subtotal: $${subtotal.toFixed(2)}`, 140, doc.lastAutoTable.finalY + 20);
-    doc.text(`IVA (19%): $${iva.toFixed(2)}`, 140, doc.lastAutoTable.finalY + 30);
+   
     doc.setFontSize(14); doc.text(`Total: $${parseFloat(venta.total).toFixed(2)}`, 140, doc.lastAutoTable.finalY + 40);
     // Información adicional
     doc.setFontSize(10);
@@ -302,187 +283,194 @@ export function Ventas() {
 
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
-  return ( 
+  return (
     <>
-      <div className="relative mt-2 h-32 w-full overflow-hidden rounded-xl bg-[url('/img/background-image.png')] bg-cover bg-center"> 
-        <div className="absolute inset-0 h-full w-full bg-gray-900/75" /> 
-      </div> 
-      <Card className="mx-3 -mt-16 mb-6 lg:mx-4 border border-blue-gray-100"> 
-        <CardBody className="p-4"> 
-          <Button onClick={() => setShowCrearVenta(!showCrearVenta)} className="btnagregar" size="sm" startIcon={<PlusIcon />}> 
-            {showCrearVenta ? "Ocultar Crear Venta" : "Crear Venta"} 
-          </Button> 
-         
-          {/* Mostrar formulario de crear venta o lista de ventas según el estado */}
-          {showCrearVenta ? (
-            <div className="mt-6">
-              <CrearVenta
-                clientes={clientes}
-                productos={productos}
-                pedidos={pedidos}
-                fetchVentas={fetchVentas}
-                onCancel={() => setShowCrearVenta(false)} // Cerrar el formulario
-              />
-            </div>
-          ) : (
+      <div className="relative mt-2 h-32 w-full overflow-hidden rounded-xl bg-[url('/img/background-image.png')] bg-cover bg-center">
+        <div className="absolute inset-0 h-full w-full bg-gray-900/75" />
+      </div>
+      <Card className="mx-3 -mt-16 mb-6 lg:mx-4 border border-blue-gray-100">
+        <CardBody className="p-4">
+          <Button onClick={() => setShowCrearVenta(!showCrearVenta)} className="btnagregar" size="sm" startIcon={<PlusIcon />}>
+            {showCrearVenta ? "Ocultar Crear Venta" : "Crear Venta"}
+          </Button>
+          {/* Botón para generar el reporte de ventas */}
+          <Button onClick={handleGenerarReporte} className="ml-4" size="sm">
+            Descargar Reporte de Ventas
+          </Button>
+          <Button onClick={() => setMostrarInforme(true)} className="ml-4" size="sm">
+            Generar Informe de Ventas
+          </Button>
+  
+          {!mostrarInforme ? (
             <>
-              <div className="mb-6 mt-6">
-                <Input
-                  type="text"
-                  placeholder="Buscar por cliente"
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                />
-                <div className="mt-4 flex gap-4">
-                  <Input
-                    type="date"
-                    label="Fecha Inicio"
-                    value={startDate}
-                    onChange={(e) => setStartDate(e.target.value)}
-                  />
-                  <Input
-                    type="date"
-                    label="Fecha Fin"
-                    value={endDate}
-                    onChange={(e) => setEndDate(e.target.value)}
+              {showCrearVenta ? (
+                <div className="mt-6">
+                  <CrearVenta
+                    clientes={clientes}
+                    productos={productos}
+                    pedidos={pedidos}
+                    fetchVentas={fetchVentas}
+                    onCancel={() => setShowCrearVenta(false)} // Cerrar el formulario
                   />
                 </div>
-              </div>
-
-              <div className="mb-1">
-                <Typography variant="h6" color="blue-gray" className="mb-4">
-                  Lista de Ventas
-                </Typography>
-                <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
-                      <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          CLIENTE
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          FECHA DE VENTA
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          ESTADO
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          ANULAR
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          ACCIONES
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                      {currentVentas.map((venta) => (
-                        <tr key={venta.id_venta}>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {venta.cliente.nombre}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {venta.fecha_venta.split('T')[0]}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {venta.estado}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            <button
-                              onClick={() => handleToggleActivo(venta.id_venta, !venta.activo)}
-                              className={`relative inline-flex items-center h-6 w-12 rounded-full p-1 duration-300 ease-in-out ${
-                                venta.activo
-                                  ? 'bg-gradient-to-r from-green-800 to-green-600 hover:from-green-600 hover:to-green-400 shadow-lg'
-                                  : 'bg-gradient-to-r from-red-800 to-red-500 hover:from-red-600 hover:to-red-400 shadow-lg'
-                              }`}
-                              disabled={!venta.activo} // Desactivar el botón si la venta está desactivada
-                            >
-                              <span
-                                className={`inline-block w-5 h-5 transform bg-white rounded-full shadow-md transition-transform duration-300 ease-in-out ${
-                                  venta.activo ? 'translate-x-5' : 'translate-x-1'
-                                }`}
-                              />
-                            </button>
-                          </td>
-
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium flex gap-2">
-                            <IconButton 
-                              className="btnvisualizar" 
-                              size="sm" 
-                              onClick={() => handleViewDetails(venta)} 
-                              disabled={!venta.activo} // Desactivar botón si la venta está desactivada
-                            >
-                              <EyeIcon className="h-5 w-5" />
-                            </IconButton>
-                            <IconButton 
-                              className="btnedit" 
-                              size="sm" 
-                              onClick={() => handleUpdateState(venta.id_venta)} 
-                              disabled={!venta.activo} // Desactivar botón si la venta está desactivada
-                            >
-                              <PencilIcon className="h-5 w-5" />
-                            </IconButton>
-                            <IconButton 
-                              className="btnpdf" 
-                              size="sm" 
-                              onClick={() => generatePDF(venta)} 
-                              disabled={!venta.activo} // Desactivar botón si la venta está desactivada
-                            >
-                              <ArrowDownIcon className="h-5 w-5" />
-                            </IconButton>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-                <div className="mt-4">
-                  <ul className="flex justify-center items-center space-x-2">
-                    {pageNumbers.map((number) => (
-                      <Button
-                        key={number}
-                        onClick={() => paginate(number)}
-                        className={`pagination ${number === currentPage ? 'active' : ''}`}
-                        size="sm"
-                      >
-                        {number}
-                      </Button>
-                    ))}
-                  </ul>
-                </div>
-              </div>
+              ) : (
+                <>
+                  <div className="mb-6 mt-6">
+                    <Input
+                      type="text"
+                      placeholder="Buscar por cliente"
+                      value={search}
+                      onChange={(e) => setSearch(e.target.value)}
+                    />
+                    <div className="mt-4 flex gap-4">
+                      <Input
+                        type="date"
+                        label="Fecha Inicio"
+                        value={startDate}
+                        onChange={(e) => setStartDate(e.target.value)}
+                      />
+                      <Input
+                        type="date"
+                        label="Fecha Fin"
+                        value={endDate}
+                        onChange={(e) => setEndDate(e.target.value)}
+                      />
+                    </div>
+                  </div>
+  
+                  <div className="mb-1">
+                    <Typography variant="h6" color="blue-gray" className="mb-4">
+                      Lista de Ventas
+                    </Typography>
+                    <div className="overflow-x-auto">
+                      <table className="min-w-full divide-y divide-gray-200">
+                        <thead className="bg-gray-50">
+                          <tr>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              CLIENTE
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              FECHA DE VENTA
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              ESTADO
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              ANULAR
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              ACCIONES
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody className="bg-white divide-y divide-gray-200">
+                          {currentVentas.map((venta) => (
+                            <tr key={venta.id_venta}>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {venta.cliente.nombre}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {venta.fecha_venta.split('T')[0]}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {venta.estado}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                <button
+                                  onClick={() => handleToggleActivo(venta.id_venta, !venta.activo)}
+                                  className={`relative inline-flex items-center h-6 w-12 rounded-full p-1 duration-300 ease-in-out ${
+                                    venta.activo
+                                      ? 'bg-gradient-to-r from-green-800 to-green-600 hover:from-green-600 hover:to-green-400 shadow-lg'
+                                      : 'bg-gradient-to-r from-red-800 to-red-500 hover:from-red-600 hover:to-red-400 shadow-lg'
+                                  }`}
+                                  disabled={!venta.activo} // Desactivar el botón si la venta está desactivada
+                                >
+                                  <span
+                                    className={`inline-block w-5 h-5 transform bg-white rounded-full shadow-md transition-transform duration-300 ease-in-out ${
+                                      venta.activo ? 'translate-x-5' : 'translate-x-1'
+                                    }`}
+                                  />
+                                </button>
+                              </td>
+  
+                              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium flex gap-2">
+                                <IconButton 
+                                  className="btnvisualizar" 
+                                  size="sm" 
+                                  onClick={() => handleViewDetails(venta)} 
+                                  disabled={!venta.activo} // Desactivar botón si la venta está desactivada
+                                >
+                                  <EyeIcon className="h-5 w-5" />
+                                </IconButton>
+                                <IconButton 
+                                  className="btnpdf" 
+                                  size="sm" 
+                                  onClick={() => generatePDF(venta)} 
+                                  disabled={!venta.activo} // Desactivar botón si la venta está desactivada
+                                >
+                                  <ArrowDownIcon className="h-5 w-5" />
+                                </IconButton>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                    <div className="mt-4">
+                      <ul className="flex justify-center items-center space-x-2">
+                        {pageNumbers.map((number) => (
+                          <Button
+                            key={number}
+                            onClick={() => paginate(number)}
+                            className={`pagination ${number === currentPage ? 'active' : ''}`}
+                            size="sm"
+                          >
+                            {number}
+                          </Button>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                </>
+              )}
             </>
+          ) : (
+            <GenerarInformeVenta onCancel={handleCancelarInforme} />
           )}
         </CardBody>
       </Card>
 
+       {/* Ejecutar la generación del reporte cuando el estado lo indique */}
+       {mostrarReporteVentas && <ReporteVentas />}
+  
       {/* Modal para capturar motivo de anulación */}
       {cancelOpen && (
-  <Dialog open={true} handler={() => setCancelOpen(false)} className="max-w-xs w-11/12 bg-white rounded-lg shadow-lg" size="xs">
-    <DialogHeader className="bg-gray-100 text-gray-800 p-3 rounded-t-lg border-b border-gray-300">
-      <Typography variant="h6" className="font-semibold">
-        Motivo de Anulación
-      </Typography>
-    </DialogHeader>
-    <DialogBody divider className="p-4 bg-white">
-      <Input 
-        label="Motivo de Anulación"
-        value={motivoAnulacion}
-        onChange={(e) => setMotivoAnulacion(e.target.value)}
-        className="w-full border-gray-300 rounded-md"
-        required
-      />
-    </DialogBody>
-    <DialogFooter className="bg-gray-100 p-3 flex justify-end gap-2 rounded-b-lg border-t border-gray-300">
-      <Button variant="text" className="btncancelarm" size="sm" onClick={() => setCancelOpen(false)}>
-        Cancelar
-      </Button>
-      <Button variant="gradient" className="btnagregarm" size="sm" onClick={handleCancelVenta}>
-        Anular Venta
-      </Button>
-    </DialogFooter>
-  </Dialog>
-)}
-
+        <Dialog open={true} handler={() => setCancelOpen(false)} className="max-w-xs w-11/12 bg-white rounded-lg shadow-lg" size="xs">
+          <DialogHeader className="bg-gray-100 text-gray-800 p-3 rounded-t-lg border-b border-gray-300">
+            <Typography variant="h6" className="font-semibold">
+              Motivo de Anulación
+            </Typography>
+          </DialogHeader>
+          <DialogBody divider className="p-4 bg-white">
+            <Input 
+              label="Motivo de Anulación"
+              value={motivoAnulacion}
+              onChange={(e) => setMotivoAnulacion(e.target.value)}
+              className="w-full border-gray-300 rounded-md"
+              required
+            />
+          </DialogBody>
+          <DialogFooter className="bg-gray-100 p-3 flex justify-end gap-2 rounded-b-lg border-t border-gray-300">
+            <Button variant="text" className="btncancelarm" size="sm" onClick={() => setCancelOpen(false)}>
+              Cancelar
+            </Button>
+            <Button variant="gradient" className="btnagregarm" size="sm" onClick={handleCancelVenta}>
+              Anular Venta
+            </Button>
+          </DialogFooter>
+        </Dialog>
+      )}
+  
       <Producir
         open={productionOpen} 
         handleProductionOpen={() => setProductionOpen(false)} 
@@ -490,7 +478,7 @@ export function Ventas() {
         fetchProductos={fetchProductos} 
         fetchProductosActivos={fetchProductos} 
       />
-
+  
       <Dialog open={detailsOpen} handler={() => setDetailsOpen(false)} className="max-w-3xl mx-auto p-6 bg-white rounded-lg shadow-lg">
         <DialogHeader className="text-lg font-semibold text-gray-800 border-b border-gray-300">
           Detalles de la Venta
@@ -549,10 +537,7 @@ export function Ventas() {
                   <td className="font-medium text-gray-700 py-2 px-4">Pagado:</td>
                   <td className="py-2 px-4">{selectedVenta.pagado ? "Sí" : "No"}</td>
                 </tr>
-                <tr className="border-b">
-                  <td className="font-medium text-gray-700 py-2 px-4">SubTotal:</td>
-                  <td className="py-2 px-4">${(selectedVenta.total / 1.19).toFixed(2)}</td>
-                </tr>
+                
                 <tr className="border-b">
                   <td className="font-medium text-gray-700 py-2 px-4">Total:</td>
                   <td className="py-2 px-4">${selectedVenta.total.toFixed(2)}</td>
@@ -593,7 +578,8 @@ export function Ventas() {
         </DialogFooter>
       </Dialog>
     </>
-  ); 
+  );
+   
 }
 
 export default Ventas;

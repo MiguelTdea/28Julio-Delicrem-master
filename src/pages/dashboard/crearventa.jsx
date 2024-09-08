@@ -175,11 +175,13 @@ export function CrearVenta({ clientes, productos, pedidos, fetchVentas, onCancel
             onChange={(e) => handlePedidoChange(e)}
             className="w-full text-xs"
           >
-            {pedidos.map(pedido => (
-              <Option key={pedido.numero_pedido} value={pedido.numero_pedido}>
-                {pedido.numero_pedido}
-              </Option>
-            ))}
+            {pedidos
+    .filter(pedido => pedido.activo && pedido.estado === "Pendiente de Preparación") // Filtrar pedidos activos y con estado "Pendiente de Preparación"
+    .map(pedido => (
+      <Option key={pedido.numero_pedido} value={pedido.numero_pedido}>
+        {pedido.numero_pedido}
+      </Option>
+    ))}
           </Select>
         </div>
         <div className="w-full max-w-xs">

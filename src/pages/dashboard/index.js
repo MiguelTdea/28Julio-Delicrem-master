@@ -29,4 +29,6 @@ export * from "@/pages/dashboard/crearusuario";
 export * from "@/pages/dashboard/crearventa";
 export * from "@/pages/dashboard/reportecompras";
 export * from "@/pages/dashboard/generarinforme";
+export * from "@/pages/dashboard/generarinformeventa";
+export * from "@/pages/dashboard/reporteventas";
 
