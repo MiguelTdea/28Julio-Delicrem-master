@@ -445,7 +445,7 @@ export function Insumos() {
                             className="btnvisualizar"
                             size="sm"
                             onClick={() => handleViewDetails(insumo)}
-                            disabled={!insumo.activo}
+                            
                           >
                             <EyeIcon className="h-4 w-4" />
                           </IconButton>

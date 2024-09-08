@@ -344,7 +344,7 @@ export function ProductoTerminado() {
                             className="btnvisualizar"
                             size="sm"
                             onClick={() => handleViewDetails(producto)}
-                            disabled={!producto.activo} // Disable view details button if product is inactive
+                             // Disable view details button if product is inactive
                           >
                             <EyeIcon className="h-4 w-4" />
                           </IconButton>

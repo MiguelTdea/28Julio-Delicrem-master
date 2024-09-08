@@ -315,7 +315,7 @@ export function FichasTecnicas() {
                               className="btnvisualizar"
                               size="sm"
                               onClick={() => handleViewDetails(ficha)}
-                              disabled={!ficha.activo}
+                              
                             >
                               <EyeIcon className="h-4 w-4" />
                             </IconButton>

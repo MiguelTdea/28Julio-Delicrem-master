@@ -294,7 +294,7 @@ export function Clientes() {
                                 className="btnvisualizar"
                                 size="sm"
                                 onClick={() => handleViewDetails(cliente)}
-                                disabled={!cliente.activo}
+                                
                               >
                                 <EyeIcon className="h-4 w-4" />
                               </IconButton>

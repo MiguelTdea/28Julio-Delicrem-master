@@ -300,7 +300,7 @@ export function Pedidos() {
                                 className="btnvisualizar"
                                 size="sm"
                                 onClick={() => handleDetailsOpen(pedido)} // Mostrar detalles al hacer clic
-                                disabled={!pedido.activo}
+                                
                               >
                                 <EyeIcon className="h-4 w-4" />
                               </IconButton>
@@ -484,41 +484,52 @@ const DetallesPedido = ({ pedido, productos, onClose }) => (
     )}
 
     {/* Información del Pedido */}
-    <div className="mb-6">
-      <Typography className="text-black p-2 text-lg mb-2">Información del Pedido</Typography>
-      <table className="min-w-full">
-        <tbody>
-          <tr>
-            <td className="font-semibold">ID Pedido:</td>
-            <td>{pedido.id_pedido}</td>
-          </tr>
-          <tr>
-            <td className="font-semibold">Número de Pedido:</td>
-            <td>{pedido.numero_pedido}</td>
-          </tr>
-          <tr>
-            <td className="font-semibold">Fecha de Entrega:</td>
-            <td>{pedido.fecha_entrega ? pedido.fecha_entrega.split('T')[0] : "N/A"}</td>
-          </tr>
-          <tr>
-            <td className="font-semibold">Fecha de Registro:</td>
-            <td>{pedido.fecha_registro ? pedido.fecha_registro.split('T')[0] : "N/A"}</td>
-          </tr>
-          <tr>
-            <td className="font-semibold">Fecha de Pago:</td>
-            <td>{pedido.fecha_pago ? pedido.fecha_pago.split('T')[0] : "N/A"}</td>
-          </tr>
-          <tr>
-            <td className="font-semibold">Estado:</td>
-            <td>{pedido.estado}</td>
-          </tr>
-          <tr>
-            <td className="font-semibold">Pagado:</td>
-            <td>{pedido.pagado ? "Sí" : "No"}</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+<div className="mb-6">
+  <Typography className="text-black p-2 text-lg mb-2">Información del Pedido</Typography>
+  <table className="min-w-full">
+    <tbody>
+      <tr>
+        <td className="font-semibold">ID Pedido:</td>
+        <td>{pedido.id_pedido}</td>
+      </tr>
+      <tr>
+        <td className="font-semibold">Número de Pedido:</td>
+        <td>{pedido.numero_pedido}</td>
+      </tr>
+      <tr>
+        <td className="font-semibold">Fecha de Entrega:</td>
+        <td>{pedido.fecha_entrega ? pedido.fecha_entrega.split('T')[0] : "N/A"}</td>
+      </tr>
+      <tr>
+        <td className="font-semibold">Fecha de Registro:</td>
+        <td>{pedido.fecha_registro ? pedido.fecha_registro.split('T')[0] : "N/A"}</td>
+      </tr>
+      <tr>
+        <td className="font-semibold">Fecha de Pago:</td>
+        <td>{pedido.fecha_pago ? pedido.fecha_pago.split('T')[0] : "N/A"}</td>
+      </tr>
+      <tr>
+        <td className="font-semibold">Estado:</td>
+        <td>{pedido.estado}</td>
+      </tr>
+      <tr>
+        <td className="font-semibold">Pagado:</td>
+        <td>{pedido.pagado ? "Sí" : "No"}</td>
+      </tr>
+      {/* Nueva fila para el total del pedido */}
+      <tr>
+        <td className="font-semibold">Total:</td>
+        <td>${pedido.total ? pedido.total : "N/A"}</td>
+      </tr>
+      {/* Nueva fila para la anulación */}
+      <tr>
+        <td className="font-semibold">Anulación:</td>
+        <td>{pedido.anulacion ? pedido.anulacion : "N/A"}</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
 
     {/* Detalles de Productos */}
     <div className="mb-6">

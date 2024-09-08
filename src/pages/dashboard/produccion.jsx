@@ -88,10 +88,16 @@ export function OrdenesProduccion() {
       fetchOrdenes(); // Actualizar la lista de órdenes después de la producción
     } catch (error) {
       console.error("Error produciendo la orden:", error);
+  
+      // Capturar el mensaje de error enviado por el backend
+      const errorMessage = error.response && error.response.data && error.response.data.error 
+        ? error.response.data.error 
+        : 'Hubo un problema al intentar producir la orden.';
+  
       Swal.fire({
         icon: 'error',
         title: 'Error al producir',
-        text: 'Hubo un problema al intentar producir la orden.',
+        html: errorMessage.replace(/\n/g, '<br/>'), // Mostrar el mensaje real del backend
         confirmButtonText: 'Aceptar',
         background: '#ffff',
         iconColor: '#A62A64',
@@ -104,6 +110,7 @@ export function OrdenesProduccion() {
       });
     }
   };
+  
 
   const handleEditOrden = (orden) => {
     setSelectedOrden(orden);

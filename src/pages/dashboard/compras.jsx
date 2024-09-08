@@ -393,6 +393,7 @@ export function Compras() {
                   <th className="px-6 py-2 text-left font-semibold text-gray-700">Nombre Insumo</th>
                   <th className="px-6 py-2 text-left font-semibold text-gray-700">Cantidad</th>
                   <th className="px-6 py-2 text-left font-semibold text-gray-700">Precio Unitario</th>
+                  
                 </tr>
               </thead>
               <tbody>
@@ -407,6 +408,10 @@ export function Compras() {
               </tbody>
             </table>
             <div className="mt-6">
+              <Typography variant="h6" color="blue-gray" className="font-semibold">
+                Motivo Anulacion : {selectedCompra.anulacion || "N/A"}
+                
+              </Typography>
               <Typography variant="h6" color="blue-gray" className="font-semibold">
                 Total: ${parseFloat(selectedCompra.total).toFixed(2)}
               </Typography>

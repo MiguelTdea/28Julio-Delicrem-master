@@ -429,7 +429,7 @@ export function Proveedores() {
                           <IconButton className="cancelar" size="sm" onClick={() => handleDelete(proveedor)} disabled={!proveedor.activo}>
                             <TrashIcon className="h-4 w-4" />
                           </IconButton>
-                          <IconButton className="btnView" size="sm" onClick={() => handleViewDetails(proveedor)} disabled={!proveedor.activo}>
+                          <IconButton className="btnView" size="sm" onClick={() => handleViewDetails(proveedor)} >
                             <EyeIcon className="h-4 w-4" />
                           </IconButton>
                         </div>

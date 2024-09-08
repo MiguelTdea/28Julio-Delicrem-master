@@ -398,7 +398,7 @@ export function Ventas() {
                                   className="btnvisualizar" 
                                   size="sm" 
                                   onClick={() => handleViewDetails(venta)} 
-                                  disabled={!venta.activo} // Desactivar botón si la venta está desactivada
+                                  // Desactivar botón si la venta está desactivada
                                 >
                                   <EyeIcon className="h-5 w-5" />
                                 </IconButton>
@@ -479,104 +479,109 @@ export function Ventas() {
         fetchProductosActivos={fetchProductos} 
       />
   
-      <Dialog open={detailsOpen} handler={() => setDetailsOpen(false)} className="max-w-3xl mx-auto p-6 bg-white rounded-lg shadow-lg">
-        <DialogHeader className="text-lg font-semibold text-gray-800 border-b border-gray-300">
-          Detalles de la Venta
-        </DialogHeader>
-        <DialogBody divider className="overflow-y-auto max-h-[60vh] p-4">
-          {selectedVenta.cliente && (
-            <div className="mb-6">
-              <Typography variant="h6" color="blue-gray" className="font-semibold mb-2">
-                Información del Cliente
-              </Typography>
-              <table className="w-full text-sm border-collapse">
-                <tbody>
-                  <tr className="border-b">
-                    <td className="font-medium text-gray-700 py-2 px-4">ID Cliente:</td>
-                    <td className="py-2 px-4">{selectedVenta.cliente.id_cliente}</td>
-                  </tr>
-                  <tr className="border-b">
-                    <td className="font-medium text-gray-700 py-2 px-4">Nombre:</td>
-                    <td className="py-2 px-4">{selectedVenta.cliente.nombre}</td>
-                  </tr>
-                  <tr className="border-b">
-                    <td className="font-medium text-gray-700 py-2 px-4">Contacto:</td>
-                    <td className="py-2 px-4">{selectedVenta.cliente.contacto}</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          )}
-          <div className="mb-6">
-            <Typography variant="h6" color="blue-gray" className="font-semibold mb-2">
-              Detalles de la Venta
-            </Typography>
-            <table className="w-full text-sm border-collapse">
-              <tbody>
-                <tr className="border-b">
-                  <td className="font-medium text-gray-700 py-2 px-4">ID Venta:</td>
-                  <td className="py-2 px-4">{selectedVenta.id_venta}</td>
-                </tr>
-                <tr className="border-b">
-                  <td className="font-medium text-gray-700 py-2 px-4">Número de Venta:</td>
-                  <td className="py-2 px-4">{selectedVenta.numero_venta}</td>
-                </tr>
-                <tr className="border-b">
-                  <td className="font-medium text-gray-700 py-2 px-4">Fecha de Venta:</td>
-                  <td className="py-2 px-4">{selectedVenta.fecha_venta.split('T')[0]}</td>
-                </tr>
-                <tr className="border-b">
-                  <td className="font-medium text-gray-700 py-2 px-4">Fecha de Entrega:</td>
-                  <td className="py-2 px-4">{selectedVenta.fecha_entrega}</td>
-                </tr>
-                <tr className="border-b">
-                  <td className="font-medium text-gray-700 py-2 px-4">Estado:</td>
-                  <td className="py-2 px-4">{selectedVenta.estado}</td>
-                </tr>
-                <tr className="border-b">
-                  <td className="font-medium text-gray-700 py-2 px-4">Pagado:</td>
-                  <td className="py-2 px-4">{selectedVenta.pagado ? "Sí" : "No"}</td>
-                </tr>
-                
-                <tr className="border-b">
-                  <td className="font-medium text-gray-700 py-2 px-4">Total:</td>
-                  <td className="py-2 px-4">${selectedVenta.total.toFixed(2)}</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-          <div className="mb-6 overflow-x-auto">
-            <Typography variant="h6" color="blue-gray" className="font-semibold mb-2">
-              Detalles de Productos
-            </Typography>
-            <table className="w-full text-sm border-collapse">
-              <thead>
-                <tr className="bg-gray-100 border-b">
-                  <th className="font-medium text-gray-700 py-2 px-4">ID Detalle</th>
-                  <th className="font-medium text-gray-700 py-2 px-4">Producto</th>
-                  <th className="font-medium text-gray-700 py-2 px-4">Cantidad</th>
-                  <th className="font-medium text-gray-700 py-2 px-4">Precio Unitario</th>
-                </tr>
-              </thead>
-              <tbody>
-                {selectedVenta.detalleVentas.map((detalle) => (
-                  <tr key={detalle.id_detalle_venta} className="border-b">
-                    <td className="py-2 px-4">{detalle.id_detalle_venta}</td>
-                    <td className="py-2 px-4">{productos.find(p => p.id_producto === detalle.id_producto)?.nombre || 'Producto no encontrado'}</td>
-                    <td className="py-2 px-4">{detalle.cantidad}</td>
-                    <td className="py-2 px-4">${parseFloat(detalle.precio_unitario).toFixed(2)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </DialogBody>
-        <DialogFooter className="p-4 border-t border-gray-300 flex justify-end">
-          <Button variant="gradient" className="btncancelarm" size="sm" onClick={() => setDetailsOpen(false)}>
-            Cerrar
-          </Button>
-        </DialogFooter>
-      </Dialog>
+  <Dialog open={detailsOpen} handler={() => setDetailsOpen(false)} className="max-w-3xl mx-auto p-6 bg-white rounded-lg shadow-lg">
+  <DialogHeader className="text-lg font-semibold text-gray-800 border-b border-gray-300">
+    Detalles de la Venta
+  </DialogHeader>
+  <DialogBody divider className="overflow-y-auto max-h-[60vh] p-4">
+    {selectedVenta.cliente && (
+      <div className="mb-6">
+        <Typography variant="h6" color="blue-gray" className="font-semibold mb-2">
+          Información del Cliente
+        </Typography>
+        <table className="w-full text-sm border-collapse">
+          <tbody>
+            <tr className="border-b">
+              <td className="font-medium text-gray-700 py-2 px-4">ID Cliente:</td>
+              <td className="py-2 px-4">{selectedVenta.cliente.id_cliente}</td>
+            </tr>
+            <tr className="border-b">
+              <td className="font-medium text-gray-700 py-2 px-4">Nombre:</td>
+              <td className="py-2 px-4">{selectedVenta.cliente.nombre}</td>
+            </tr>
+            <tr className="border-b">
+              <td className="font-medium text-gray-700 py-2 px-4">Contacto:</td>
+              <td className="py-2 px-4">{selectedVenta.cliente.contacto}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    )}
+    <div className="mb-6">
+      <Typography variant="h6" color="blue-gray" className="font-semibold mb-2">
+        Detalles de la Venta
+      </Typography>
+      <table className="w-full text-sm border-collapse">
+        <tbody>
+          <tr className="border-b">
+            <td className="font-medium text-gray-700 py-2 px-4">ID Venta:</td>
+            <td className="py-2 px-4">{selectedVenta.id_venta}</td>
+          </tr>
+          <tr className="border-b">
+            <td className="font-medium text-gray-700 py-2 px-4">Número de Venta:</td>
+            <td className="py-2 px-4">{selectedVenta.numero_venta}</td>
+          </tr>
+          <tr className="border-b">
+            <td className="font-medium text-gray-700 py-2 px-4">Fecha de Venta:</td>
+            <td className="py-2 px-4">{selectedVenta.fecha_venta.split('T')[0]}</td>
+          </tr>
+          <tr className="border-b">
+            <td className="font-medium text-gray-700 py-2 px-4">Fecha de Entrega:</td>
+            <td className="py-2 px-4">{selectedVenta.fecha_entrega}</td>
+          </tr>
+          <tr className="border-b">
+            <td className="font-medium text-gray-700 py-2 px-4">Estado:</td>
+            <td className="py-2 px-4">{selectedVenta.estado}</td>
+          </tr>
+          <tr className="border-b">
+            <td className="font-medium text-gray-700 py-2 px-4">Pagado:</td>
+            <td className="py-2 px-4">{selectedVenta.pagado ? "Sí" : "No"}</td>
+          </tr>
+          <tr className="border-b">
+            <td className="font-medium text-gray-700 py-2 px-4">Total:</td>
+            <td className="py-2 px-4">${selectedVenta.total.toFixed(2)}</td>
+          </tr>
+          <tr className="border-b">
+            <td className="font-medium text-gray-700 py-2 px-4">Anulación:</td>
+            <td className="py-2 px-4">{selectedVenta.anulacion || "N/A"}</td>
+          </tr> {/* Añadimos esta fila */}
+        </tbody>
+      </table>
+    </div>
+    {/* Detalles de productos */}
+    <div className="mb-6 overflow-x-auto">
+      <Typography variant="h6" color="blue-gray" className="font-semibold mb-2">
+        Detalles de Productos
+      </Typography>
+      <table className="w-full text-sm border-collapse">
+        <thead>
+          <tr className="bg-gray-100 border-b">
+            <th className="font-medium text-gray-700 py-2 px-4">ID Detalle</th>
+            <th className="font-medium text-gray-700 py-2 px-4">Producto</th>
+            <th className="font-medium text-gray-700 py-2 px-4">Cantidad</th>
+            <th className="font-medium text-gray-700 py-2 px-4">Precio Unitario</th>
+          </tr>
+        </thead>
+        <tbody>
+          {selectedVenta.detalleVentas.map((detalle) => (
+            <tr key={detalle.id_detalle_venta} className="border-b">
+              <td className="py-2 px-4">{detalle.id_detalle_venta}</td>
+              <td className="py-2 px-4">{productos.find(p => p.id_producto === detalle.id_producto)?.nombre || 'Producto no encontrado'}</td>
+              <td className="py-2 px-4">{detalle.cantidad}</td>
+              <td className="py-2 px-4">${parseFloat(detalle.precio_unitario).toFixed(2)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </DialogBody>
+  <DialogFooter className="p-4 border-t border-gray-300 flex justify-end">
+    <Button variant="gradient" className="btncancelarm" size="sm" onClick={() => setDetailsOpen(false)}>
+      Cerrar
+    </Button>
+  </DialogFooter>
+</Dialog>
+
     </>
   );
    

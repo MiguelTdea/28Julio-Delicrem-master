@@ -281,7 +281,7 @@ export function Usuarios() {
                           <IconButton className="btncancelarm" size="sm" onClick={() => handleDelete(user)} disabled={!user.activo}>
                             <TrashIcon className="h-4 w-4" />
                           </IconButton>
-                          <IconButton className="btnvisualizar" size="sm" onClick={() => handleViewDetails(user)} disabled={!user.activo}>
+                          <IconButton className="btnvisualizar" size="sm" onClick={() => handleViewDetails(user)}>
                             <EyeIcon className="h-4 w-4" />
                           </IconButton>
                         </div>
